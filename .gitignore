@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.example
+.env.mysql.template
+
+# Sensitive data files
+data.txt
+pass.txt
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Optional npm cache
+.npm
+
+# Build files
+dist/
+build/
+
+# Uploaded images
+public/business-images/*
+!public/business-images/.gitkeep
