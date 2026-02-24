@@ -680,11 +680,13 @@ app.delete("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await Business.findByIdAndDelete(id);
+    const business = await Business.findByPk(id);
 
-    if (!result) {
+    if (!business) {
       return res.status(404).json({ error: "Business not found" });
     }
+
+    await business.destroy();
 
     res.json({ success: true });
   } catch (error) {
@@ -845,7 +847,7 @@ app.patch("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { name, address, street, city, state, zip, phone, website, lat, lng } = req.body;
 
-    const parish = await Parish.findById(id);
+    const parish = await Parish.findByPk(id);
 
     if (!parish) {
       return res.status(404).json({ error: "Parish not found" });
@@ -876,11 +878,13 @@ app.delete("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await Parish.findByIdAndDelete(id);
+    const parish = await Parish.findByPk(id);
 
-    if (!result) {
+    if (!parish) {
       return res.status(404).json({ error: "Parish not found" });
     }
+
+    await parish.destroy();
 
     res.json({ success: true });
   } catch (error) {
