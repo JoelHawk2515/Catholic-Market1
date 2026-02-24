@@ -38,10 +38,10 @@ const storage = multer.diskStorage({
       .replace(/[^a-z0-9]/g, '_')
       .replace(/_+/g, '_')
       .substring(0, 50);
-    
+
     // Get file extension
     const ext = path.extname(file.originalname).toLowerCase();
-    
+
     // Create filename: businessname.ext
     cb(null, `${sanitizedName}${ext}`);
   }
@@ -52,7 +52,7 @@ const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
-  
+
   if (mimetype && extname) {
     return cb(null, true);
   } else {
@@ -112,22 +112,22 @@ function requireAdmin(req, res, next) {
 app.post("/api/admin/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     console.log('Login attempt:', username);
-    
+
     const admin = await Admin.findOne({ where: { username: username.toLowerCase(), active: true } });
-    
+
     if (!admin) {
       console.log('Admin not found for username:', username);
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    
+
     console.log('Admin found:', admin.id, admin.username);
-    
+
     const isMatch = await admin.comparePassword(password);
-    
+
     console.log('Password match:', isMatch);
-    
+
     if (isMatch) {
       req.session.adminId = admin.id.toString();
       console.log('Login successful, session ID:', req.session.adminId);
@@ -159,7 +159,7 @@ app.post("/api/submissions", upload.single('image'), async (req, res) => {
     if (req.file) {
       imageUrl = `/business-images/${req.file.filename}`;
     }
-    
+
     const submission = await Submission.create({
       name: req.body.name,
       address: req.body.address,
@@ -183,18 +183,18 @@ app.post("/api/submissions", upload.single('image'), async (req, res) => {
       schedule: req.body.schedule ? JSON.parse(req.body.schedule) : null,
       status: 'pending'
     });
-    
+
     res.json({ success: true, message: "Submission received and pending review" });
   } catch (error) {
     console.error('Submission error:', error);
-    
+
     // Clean up uploaded file if submission fails
     if (req.file) {
       fs.unlink(req.file.path, (err) => {
         if (err) console.error('Error deleting file:', err);
       });
     }
-    
+
     res.status(500).json({ error: error.message || "Failed to submit business" });
   }
 });
@@ -206,13 +206,13 @@ app.get("/api/admin/submissions/pending", requireAdmin, async (req, res) => {
       where: { status: 'pending' },
       order: [['submittedAt', 'DESC']]
     });
-    
+
     // Format for frontend (convert to plain objects with id)
     const formatted = submissions.map(sub => ({
       ...sub.toJSON(),
       id: sub.id.toString()
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching submissions:', error);
@@ -225,18 +225,18 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
   try {
     const { id } = req.params;
     const { verified = true } = req.body;
-    
+
     const submission = await Submission.findByPk(id);
-    
+
     if (!submission) {
       return res.status(404).json({ error: "Submission not found" });
     }
-    
+
     // Convert tags string to array
-    const tagsArray = submission.tags 
+    const tagsArray = submission.tags
       ? submission.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       : [];
-    
+
     // Create new business
     const business = await Business.create({
       name: submission.name,
@@ -262,9 +262,9 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
       schedule: submission.schedule || null,
       verified: verified
     });
-    
+
     await business.save();
-    
+
     // Geocode the address immediately after approval
     try {
       // Build a more complete address string for better geocoding accuracy
@@ -276,7 +276,7 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
         if (submission.zip) parts.push(submission.zip);
         fullAddress = parts.join(', ');
       }
-      
+
       const coords = await geocodeAddress(fullAddress);
       if (coords) {
         business.lat = coords.lat;
@@ -292,13 +292,13 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
       console.error('Failed to geocode approved business:', geocodeError);
       // Continue anyway - the business is still created, just without coordinates
     }
-    
+
     // Update submission status
     submission.status = 'approved';
     submission.reviewedAt = new Date();
     submission.reviewedBy = req.session.adminId;
     await submission.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Approval error:', error);
@@ -310,18 +310,18 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
 app.post("/api/admin/submissions/:id/reject", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const submission = await Submission.findByPk(id);
-    
+
     if (!submission) {
       return res.status(404).json({ error: "Submission not found" });
     }
-    
+
     submission.status = 'rejected';
     submission.reviewedAt = new Date();
     submission.reviewedBy = req.session.adminId;
     await submission.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Rejection error:', error);
@@ -329,18 +329,136 @@ app.post("/api/admin/submissions/:id/reject", requireAdmin, async (req, res) => 
   }
 });
 
+// Admin: Bulk upload businesses from CSV
+app.post("/api/admin/bulk-upload", requireAdmin, async (req, res) => {
+  try {
+    const { businesses } = req.body;
+
+    if (!businesses || !Array.isArray(businesses) || businesses.length === 0) {
+      return res.status(400).json({ error: "No business data provided" });
+    }
+
+    let created = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (let i = 0; i < businesses.length; i++) {
+      const b = businesses[i];
+
+      // Skip rows missing required fields
+      if (!b.name || !b.address || !b.city) {
+        failed++;
+        errors.push({ row: i + 1, error: 'Missing required field (name, address, or city)' });
+        continue;
+      }
+
+      try {
+        // Convert tags from semicolons to comma-separated
+        let tagsStr = '';
+        if (b.tags) {
+          tagsStr = b.tags.split(';').map(t => t.trim()).filter(Boolean).join(', ');
+        }
+
+        await Submission.create({
+          name: b.name,
+          address: b.address,
+          street: b.street || null,
+          city: b.city || null,
+          state: b.state || null,
+          zip: b.zip || null,
+          owner: b.owner || null,
+          phone: b.phone || null,
+          email: b.email || null,
+          website: b.website || null,
+          category: b.category || null,
+          description: b.description || null,
+          tags: tagsStr,
+          hasWifi: String(b.hasWifi).toLowerCase() === 'true',
+          familyFriendly: String(b.familyFriendly).toLowerCase() === 'true',
+          hasParking: String(b.hasParking).toLowerCase() === 'true',
+          imageUrl: null,
+          schedule: null,
+          status: 'pending'
+        });
+
+        created++;
+      } catch (err) {
+        failed++;
+        errors.push({ row: i + 1, error: err.message || 'Unknown error' });
+      }
+    }
+
+    console.log(`Bulk upload complete: ${created} created, ${failed} failed`);
+    res.json({ created, failed, errors: errors.slice(0, 20) }); // Cap error list at 20
+  } catch (error) {
+    console.error('Bulk upload error:', error);
+    res.status(500).json({ error: "Bulk upload failed" });
+  }
+});
+
+// Admin: Bulk upload parishes from CSV
+app.post("/api/admin/bulk-upload-parishes", requireAdmin, async (req, res) => {
+  try {
+    const { parishes } = req.body;
+
+    if (!parishes || !Array.isArray(parishes) || parishes.length === 0) {
+      return res.status(400).json({ error: "No parish data provided" });
+    }
+
+    let created = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (let i = 0; i < parishes.length; i++) {
+      const p = parishes[i];
+
+      if (!p.name || !p.address || !p.city || !p.state) {
+        failed++;
+        errors.push({ row: i + 1, error: 'Missing required field (name, address, city, or state)' });
+        continue;
+      }
+
+      try {
+        await Parish.create({
+          name: p.name,
+          address: p.address,
+          street: p.street || null,
+          city: p.city,
+          state: p.state,
+          zip: p.zip || null,
+          phone: p.phone || null,
+          website: p.website || null,
+          lat: p.lat ? parseFloat(p.lat) : null,
+          lng: p.lng ? parseFloat(p.lng) : null
+        });
+
+        created++;
+      } catch (err) {
+        failed++;
+        errors.push({ row: i + 1, error: err.message || 'Unknown error' });
+      }
+    }
+
+    console.log(`Bulk parish upload complete: ${created} created, ${failed} failed`);
+    res.json({ created, failed, errors: errors.slice(0, 20) });
+  } catch (error) {
+    console.error('Bulk parish upload error:', error);
+    res.status(500).json({ error: "Bulk parish upload failed" });
+  }
+});
+
 // Admin: Get approved businesses
 app.get("/api/admin/businesses/approved", requireAdmin, async (req, res) => {
   try {
     const businesses = await Business.findAll({ order: [['createdAt', 'DESC']] });
-    
+
     // Format for frontend
     const formatted = businesses.map(biz => ({
       ...biz.toJSON(),
       id: biz.id.toString(),
       tags: biz.tags.join(', ') // Convert array back to string for display
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching businesses:', error);
@@ -352,11 +470,11 @@ app.get("/api/admin/businesses/approved", requireAdmin, async (req, res) => {
 app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const { name, address, street, city, state, zip, owner, phone, email, website, category, description, verified, hasWifi, familyFriendly, hasParking, schedule } = req.body;
-    
+
     if (!name || !address) {
       return res.status(400).json({ error: "Name and address are required" });
     }
-    
+
     const business = await Business.create({
       name,
       address,
@@ -380,7 +498,7 @@ app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (r
       imageUrl: req.file ? `/business-images/${req.file.filename}` : null,
       tags: category ? [category] : []
     });
-    
+
     // Geocode the address immediately after creation
     try {
       let fullAddress = address;
@@ -391,7 +509,7 @@ app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (r
         if (zip) parts.push(zip);
         fullAddress = parts.join(', ');
       }
-      
+
       const coords = await geocodeAddress(fullAddress);
       if (coords) {
         business.lat = coords.lat;
@@ -407,7 +525,7 @@ app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (r
       console.error('Failed to geocode new business:', geocodeError);
       // Continue anyway - the business is still created, just without coordinates
     }
-    
+
     res.json({ success: true, id: business.id });
   } catch (error) {
     console.error('Create business error:', error);
@@ -420,16 +538,16 @@ app.post("/api/admin/businesses/:id/verify", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { verified } = req.body;
-    
+
     const business = await Business.findByPk(id);
-    
+
     if (!business) {
       return res.status(404).json({ error: "Business not found" });
     }
-    
+
     business.verified = verified;
     await business.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Verify error:', error);
@@ -442,16 +560,16 @@ app.post("/api/admin/businesses/:id/sponsor", requireAdmin, async (req, res) => 
   try {
     const { id } = req.params;
     const { sponsored } = req.body;
-    
+
     const business = await Business.findByPk(id);
-    
+
     if (!business) {
       return res.status(404).json({ error: "Business not found" });
     }
-    
+
     business.sponsored = sponsored;
     await business.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Sponsor error:', error);
@@ -464,13 +582,13 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, hasWifi, familyFriendly, hasParking, schedule } = req.body;
-    
+
     const business = await Business.findByPk(id);
-    
+
     if (!business) {
       return res.status(404).json({ error: "Business not found" });
     }
-    
+
     // Update fields
     if (name !== undefined) business.name = name;
     if (address !== undefined) business.address = address;
@@ -490,9 +608,9 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
     if (familyFriendly !== undefined) business.familyFriendly = familyFriendly;
     if (hasParking !== undefined) business.hasParking = hasParking;
     if (schedule !== undefined) business.schedule = schedule;
-    
+
     await business.save();
-    
+
     // If address was updated, re-geocode
     if (address !== undefined || city !== undefined || state !== undefined || zip !== undefined) {
       try {
@@ -504,7 +622,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
           if (business.zip) parts.push(business.zip);
           fullAddress = parts.join(', ');
         }
-        
+
         const coords = await geocodeAddress(fullAddress);
         if (coords) {
           business.lat = coords.lat;
@@ -521,7 +639,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
         // Continue anyway
       }
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Update error:', error);
@@ -533,23 +651,23 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
 app.post("/api/admin/businesses/:id/image", requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!req.file) {
       return res.status(400).json({ error: "No image file provided" });
     }
-    
+
     const business = await Business.findByPk(id);
-    
+
     if (!business) {
       return res.status(404).json({ error: "Business not found" });
     }
-    
+
     // Update image URL
     const imageUrl = `/business-images/${req.file.filename}`;
     business.imageUrl = imageUrl;
-    
+
     await business.save();
-    
+
     res.json({ success: true, imageUrl });
   } catch (error) {
     console.error('Image upload error:', error);
@@ -561,13 +679,13 @@ app.post("/api/admin/businesses/:id/image", requireAdmin, upload.single('image')
 app.delete("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const result = await Business.findByIdAndDelete(id);
-    
+
     if (!result) {
       return res.status(404).json({ error: "Business not found" });
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
@@ -595,9 +713,9 @@ app.get("/api/businesses", async (req, res) => {
         lng: { [Op.gte]: minLng, [Op.lte]: maxLng }
       }
     });
-    
+
     console.log(`Found ${businesses.length} businesses in bounds`);
-    
+
     // Format for frontend
     const formatted = businesses.map(biz => ({
       ...biz.toJSON(),
@@ -606,7 +724,7 @@ app.get("/api/businesses", async (req, res) => {
       lng: biz.lng ? parseFloat(biz.lng) : null,
       tags: Array.isArray(biz.tags) ? biz.tags.join(', ') : ''
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching businesses:', error);
@@ -634,9 +752,9 @@ app.get("/api/parishes", async (req, res) => {
         lng: { [Op.gte]: minLng, [Op.lte]: maxLng }
       }
     });
-    
+
     console.log(`Found ${parishes.length} parishes in bounds`);
-    
+
     // Format for frontend
     const formatted = parishes.map(parish => ({
       ...parish.toJSON(),
@@ -644,10 +762,33 @@ app.get("/api/parishes", async (req, res) => {
       lat: parish.lat ? parseFloat(parish.lat) : null,
       lng: parish.lng ? parseFloat(parish.lng) : null
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching parishes:', error);
+    res.status(500).json({ error: "Failed to fetch parishes" });
+  }
+});
+
+// Public: Get parishes by city name (for Add Business form parish lookup)
+app.get("/api/parishes/city/:city", async (req, res) => {
+  try {
+    const city = req.params.city;
+    const parishes = await Parish.findAll({
+      where: {
+        city: { [Op.like]: `%${city}%` }
+      },
+      order: [['name', 'ASC']]
+    });
+
+    const formatted = parishes.map(parish => ({
+      ...parish.toJSON(),
+      id: parish.id.toString()
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Error fetching parishes by city:', error);
     res.status(500).json({ error: "Failed to fetch parishes" });
   }
 });
@@ -656,12 +797,12 @@ app.get("/api/parishes", async (req, res) => {
 app.get("/api/admin/parishes", requireAdmin, async (req, res) => {
   try {
     const parishes = await Parish.findAll({ order: [['name', 'ASC']] });
-    
+
     const formatted = parishes.map(parish => ({
       ...parish.toJSON(),
       id: parish.id.toString()
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching parishes:', error);
@@ -673,11 +814,11 @@ app.get("/api/admin/parishes", requireAdmin, async (req, res) => {
 app.post("/api/admin/parishes", requireAdmin, async (req, res) => {
   try {
     const { name, address, street, city, state, zip, website, massTimes } = req.body;
-    
+
     if (!name || !address) {
       return res.status(400).json({ error: "Name and address are required" });
     }
-    
+
     const parish = await Parish.create({
       name,
       address,
@@ -690,7 +831,7 @@ app.post("/api/admin/parishes", requireAdmin, async (req, res) => {
       lat: null,
       lng: null
     });
-    
+
     res.json({ success: true, id: parish.id });
   } catch (error) {
     console.error('Create parish error:', error);
@@ -703,13 +844,13 @@ app.patch("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, address, street, city, state, zip, phone, website, lat, lng } = req.body;
-    
+
     const parish = await Parish.findById(id);
-    
+
     if (!parish) {
       return res.status(404).json({ error: "Parish not found" });
     }
-    
+
     if (name !== undefined) parish.name = name;
     if (address !== undefined) parish.address = address;
     if (street !== undefined) parish.street = street;
@@ -720,9 +861,9 @@ app.patch("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
     if (website !== undefined) parish.website = website;
     if (lat !== undefined) parish.lat = lat;
     if (lng !== undefined) parish.lng = lng;
-    
+
     await parish.save();
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Update error:', error);
@@ -734,13 +875,13 @@ app.patch("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
 app.delete("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const result = await Parish.findByIdAndDelete(id);
-    
+
     if (!result) {
       return res.status(404).json({ error: "Parish not found" });
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
@@ -753,7 +894,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
   try {
     let businessesUpdated = 0;
     let parishesUpdated = 0;
-    
+
     // Geocode businesses without coordinates
     const businessesNeedingGeocode = await Business.findAll({
       where: {
@@ -763,7 +904,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
         ]
       }
     });
-    
+
     for (const business of businessesNeedingGeocode) {
       try {
         // Build a more complete address string for better geocoding accuracy
@@ -775,7 +916,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
           if (business.zip) parts.push(business.zip);
           fullAddress = parts.join(', ');
         }
-        
+
         const coords = await geocodeAddress(fullAddress);
         if (coords) {
           business.lat = coords.lat;
@@ -794,7 +935,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
         console.error(`Failed to geocode business ${business.name}:`, err.message);
       }
     }
-    
+
     // Geocode parishes without coordinates
     const parishesNeedingGeocode = await Parish.findAll({
       where: {
@@ -804,7 +945,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
         ]
       }
     });
-    
+
     for (const parish of parishesNeedingGeocode) {
       try {
         // Build a more complete address string for better geocoding accuracy
@@ -816,7 +957,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
           if (parish.zip) parts.push(parish.zip);
           fullAddress = parts.join(', ');
         }
-        
+
         const coords = await geocodeAddress(fullAddress);
         if (coords) {
           parish.lat = coords.lat;
@@ -835,7 +976,7 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
         console.error(`Failed to geocode parish ${parish.name}:`, err.message);
       }
     }
-    
+
     res.json({
       success: true,
       businessesUpdated,
@@ -859,7 +1000,7 @@ async function geocodeAddress(address) {
   } catch (err) {
     console.error('Photon geocoding failed:', err.message);
   }
-  
+
   // Fallback to Nominatim
   try {
     const nominatimResult = await geocodeWithNominatim(address);
@@ -870,7 +1011,7 @@ async function geocodeAddress(address) {
   } catch (err) {
     console.error('Nominatim geocoding failed:', err.message);
   }
-  
+
   return null;
 }
 
@@ -880,20 +1021,20 @@ async function geocodeWithPhoton(address) {
     const url = new URL("https://photon.komoot.io/api/");
     url.searchParams.append("q", address);
     url.searchParams.append("limit", "1");
-    
+
     const response = await fetch(url.toString());
-    
+
     if (!response.ok) {
       throw new Error(`Photon geocoding failed: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (data.features && data.features.length > 0) {
       const feature = data.features[0];
       const props = feature.properties || {};
       const coords = feature.geometry.coordinates; // [lng, lat] format
-      
+
       return {
         lat: coords[1],
         lng: coords[0],
@@ -904,7 +1045,7 @@ async function geocodeWithPhoton(address) {
         displayName: props.name ? `${props.name}, ${props.city || ''}, ${props.state || ''}` : address
       };
     }
-    
+
     return null;
   } catch (error) {
     throw error;
@@ -919,23 +1060,23 @@ async function geocodeWithNominatim(address) {
     url.searchParams.append("format", "json");
     url.searchParams.append("addressdetails", "1");
     url.searchParams.append("limit", "1");
-    
+
     const response = await fetch(url.toString(), {
       headers: {
         'User-Agent': 'CatholicMarket/1.0'
       }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Nominatim geocoding failed: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (data && data.length > 0) {
       const result = data[0];
       const addr = result.address || {};
-      
+
       return {
         lat: parseFloat(result.lat),
         lng: parseFloat(result.lon),
@@ -946,7 +1087,7 @@ async function geocodeWithNominatim(address) {
         displayName: result.display_name
       };
     }
-    
+
     return null;
   } catch (error) {
     throw error;
@@ -957,17 +1098,17 @@ async function geocodeWithNominatim(address) {
 app.get("/api/parishes/city/:cityName", async (req, res) => {
   try {
     const cityName = req.params.cityName;
-    
+
     const parishes = await Parish.find({
       city: new RegExp(`^${cityName}$`, 'i') // Case-insensitive match
     }).lean();
-    
+
     // Format for frontend
     const formatted = parishes.map(parish => ({
       ...parish.toJSON(),
       id: parish.id.toString()
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching parishes:', error);
@@ -978,21 +1119,21 @@ app.get("/api/parishes/city/:cityName", async (req, res) => {
 // API: fetch sponsored businesses for homepage rotator
 app.get("/api/businesses/sponsored", async (req, res) => {
   try {
-    const sponsored = await Business.findAll({ 
+    const sponsored = await Business.findAll({
       where: {
         sponsored: true,
         verified: true // Only show verified sponsored businesses
       },
       order: [['createdAt', 'DESC']]
     });
-    
+
     console.log(`Found ${sponsored.length} sponsored businesses:`, sponsored.map(b => ({ id: b.id, name: b.name, sponsored: b.sponsored, verified: b.verified })));
-    
+
     const formatted = sponsored.map(biz => ({
       ...biz.toJSON(),
       id: biz.id.toString()
     }));
-    
+
     res.json(formatted);
   } catch (error) {
     console.error('Error fetching sponsored businesses:', error);
@@ -1004,11 +1145,11 @@ app.get("/api/businesses/sponsored", async (req, res) => {
 app.post("/api/analytics/track", async (req, res) => {
   try {
     const { businessId, businessName, eventType, tag, userLocation } = req.body;
-    
+
     if (!businessId || !businessName || !eventType) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-    
+
     const analytics = await Analytics.create({
       businessId,
       businessName,
@@ -1018,7 +1159,7 @@ app.post("/api/analytics/track", async (req, res) => {
       userLocationLng: userLocation?.lng || null,
       timestamp: new Date()
     });
-    
+
     res.json({ success: true });
   } catch (error) {
     console.error('Analytics tracking error:', error);
@@ -1030,28 +1171,28 @@ app.post("/api/analytics/track", async (req, res) => {
 app.get("/api/analytics/popular", async (req, res) => {
   try {
     const { lat, lng, radius = 50 } = req.query; // radius in km
-    
+
     if (!lat || !lng) {
       return res.status(400).json({ error: "Location required" });
     }
-    
+
     const userLat = parseFloat(lat);
     const userLng = parseFloat(lng);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    
+
     // Get all businesses (verified or not)
     const businesses = await Business.findAll();
-    
+
     // Filter businesses within radius and get their click counts
     const businessesInRadius = [];
-    
+
     for (const business of businesses) {
       if (business.lat && business.lng) {
         const distance = getDistanceFromLatLonInKm(
           userLat, userLng,
           business.lat, business.lng
         );
-        
+
         if (distance <= radius) {
           // Count ALL clicks for this business in last 7 days (card, directions, website)
           const clickCount = await Analytics.count({
@@ -1061,7 +1202,7 @@ app.get("/api/analytics/popular", async (req, res) => {
               timestamp: { [Op.gte]: sevenDaysAgo }
             }
           });
-          
+
           businessesInRadius.push({
             ...business.toJSON(),
             id: business.id.toString(),
@@ -1071,7 +1212,7 @@ app.get("/api/analytics/popular", async (req, res) => {
         }
       }
     }
-    
+
     // Sort by click count (most popular first), then by distance
     businessesInRadius.sort((a, b) => {
       if (b.clickCount !== a.clickCount) {
@@ -1079,7 +1220,7 @@ app.get("/api/analytics/popular", async (req, res) => {
       }
       return a.distance - b.distance;
     });
-    
+
     // Return top 7 popular businesses
     res.json(businessesInRadius.slice(0, 7));
   } catch (error) {

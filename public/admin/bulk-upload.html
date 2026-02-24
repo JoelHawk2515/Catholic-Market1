@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Bulk Upload - Admin - Catholic Market</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/admin/bulk-upload.css" />
+</head>
+
+<body style="background: #05070b; padding: 0;">
+    <!-- Nav -->
+    <nav id="top-nav" style="position: relative;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="/admin/dashboard.html"
+                style="text-decoration:none; display:flex; align-items:center; gap:0.6rem; color:#a7b0ce;">
+                <i class="fas fa-arrow-left"></i>
+                <img src="/img/logo.png" alt="Logo" class="logo-small" />
+            </a>
+            <span style="color: #a7b0ce; font-size: 0.9rem;">Bulk Upload</span>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="/admin/dashboard.html" class="btn-refresh"
+                style="font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration:none;">← Dashboard</a>
+            <button id="logoutBtn" style="background: #272b3a;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-icon"><i class="fas fa-file-csv"></i></div>
+            <h1>Bulk Upload</h1>
+            <p class="page-subtitle">Upload a CSV file to create multiple businesses or parishes at once.</p>
+        </div>
+
+        <!-- Upload Type Tabs -->
+        <div class="upload-tabs">
+            <button class="upload-tab active" data-type="business">
+                <i class="fas fa-store"></i> Businesses
+            </button>
+            <button class="upload-tab" data-type="parish">
+                <i class="fas fa-church"></i> Parishes
+            </button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- BUSINESS UPLOAD PANEL                        -->
+        <!-- ============================================ -->
+        <div id="businessPanel" class="upload-panel active">
+            <!-- CSV Template -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-table"></i>
+                    <h2>Business CSV Template</h2>
+                </div>
+                <p class="section-desc">Your CSV must follow this column format. The first row should be the header.</p>
+                <div class="csv-preview">
+                    <div class="csv-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>name <span class="req">*</span></th>
+                                    <th>address <span class="req">*</span></th>
+                                    <th>street</th>
+                                    <th>city <span class="req">*</span></th>
+                                    <th>state</th>
+                                    <th>zip</th>
+                                    <th>owner</th>
+                                    <th>phone</th>
+                                    <th>email</th>
+                                    <th>website</th>
+                                    <th>category</th>
+                                    <th>description</th>
+                                    <th>tags</th>
+                                    <th>hasWifi</th>
+                                    <th>familyFriendly</th>
+                                    <th>hasParking</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="sample-row">
+                                    <td>St. Joseph's Coffee</td>
+                                    <td>123 Main St, Wichita, KS 67202</td>
+                                    <td>123 Main St</td>
+                                    <td>Wichita</td>
+                                    <td>KS</td>
+                                    <td>67202</td>
+                                    <td>John Doe</td>
+                                    <td>(316) 555-0100</td>
+                                    <td>info@sjcoffee.com</td>
+                                    <td>https://sjcoffee.com</td>
+                                    <td>Coffee Shop</td>
+                                    <td>Parish coffee house</td>
+                                    <td>coffee;food</td>
+                                    <td>true</td>
+                                    <td>true</td>
+                                    <td>true</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="template-actions">
+                    <button id="downloadBusinessTemplate" class="btn-template">
+                        <i class="fas fa-download"></i> Download Business Template
+                    </button>
+                    <div class="field-notes">
+                        <p><span class="req">*</span> = Required &nbsp;|&nbsp; <strong>tags:</strong>
+                            semicolon-separated &nbsp;|&nbsp; <strong>booleans:</strong>
+                            <code>true</code>/<code>false</code></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="section-card">
+                <div class="section-title"><i class="fas fa-upload"></i>
+                    <h2>Upload Business CSV</h2>
+                </div>
+                <div class="upload-zone" id="businessUploadZone">
+                    <input type="file" id="businessCsvInput" accept=".csv" style="display:none;" />
+                    <div class="upload-content" id="businessUploadContent">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="upload-text">Drop your CSV here or <strong>click to browse</strong></p>
+                        <p class="upload-hint">Only .csv files accepted</p>
+                    </div>
+                    <div class="file-selected" id="businessFileSelected" style="display:none;">
+                        <i class="fas fa-file-csv file-icon"></i>
+                        <div class="file-info">
+                            <span class="file-name" id="businessFileName">file.csv</span>
+                            <span class="file-size" id="businessFileSize">0 KB</span>
+                        </div>
+                        <button type="button" class="file-remove" id="businessRemoveFile"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="businessPreview" style="display:none;">
+                    <div class="preview-header">
+                        <h3><i class="fas fa-eye"></i> Preview (<span id="businessRowCount">0</span> rows)</h3>
+                        <div class="preview-stats">
+                            <span class="stat valid"><i class="fas fa-check-circle"></i> <span
+                                    id="businessValidCount">0</span> valid</span>
+                            <span class="stat invalid"><i class="fas fa-exclamation-triangle"></i> <span
+                                    id="businessInvalidCount">0</span> errors</span>
+                        </div>
+                    </div>
+                    <div class="preview-table-wrap">
+                        <table>
+                            <thead>
+                                <tr id="businessPreviewHead"></tr>
+                            </thead>
+                            <tbody id="businessPreviewBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="upload-actions">
+                        <button id="businessUploadBtn" class="btn-upload" disabled><i
+                                class="fas fa-cloud-upload-alt"></i> Upload All Valid Rows</button>
+                    </div>
+                </div>
+                <div id="businessResults" style="display:none;">
+                    <div class="results-card">
+                        <div class="results-icon"><i class="fas fa-check-circle"></i></div>
+                        <h3>Upload Complete</h3>
+                        <p id="businessResultsMsg"></p>
+                        <div class="results-actions">
+                            <button id="businessUploadAnother" class="btn-template"><i class="fas fa-redo"></i> Upload
+                                Another</button>
+                            <a href="/admin/dashboard.html" class="btn-upload" style="text-decoration:none;"><i
+                                    class="fas fa-arrow-right"></i> Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- PARISH UPLOAD PANEL                          -->
+        <!-- ============================================ -->
+        <div id="parishPanel" class="upload-panel">
+            <!-- CSV Template -->
+            <div class="section-card">
+                <div class="section-title">
+                    <i class="fas fa-table"></i>
+                    <h2>Parish CSV Template</h2>
+                </div>
+                <p class="section-desc">Your CSV must follow this column format. The first row should be the header.</p>
+                <div class="csv-preview">
+                    <div class="csv-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>name <span class="req">*</span></th>
+                                    <th>address <span class="req">*</span></th>
+                                    <th>street</th>
+                                    <th>city <span class="req">*</span></th>
+                                    <th>state <span class="req">*</span></th>
+                                    <th>zip</th>
+                                    <th>phone</th>
+                                    <th>website</th>
+                                    <th>lat</th>
+                                    <th>lng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="sample-row">
+                                    <td>Cathedral of the Immaculate Conception</td>
+                                    <td>424 N Broadway, Wichita, KS 67202</td>
+                                    <td>424 N Broadway</td>
+                                    <td>Wichita</td>
+                                    <td>KS</td>
+                                    <td>67202</td>
+                                    <td>(316) 262-1641</td>
+                                    <td>https://catholicdioceseofwichita.org</td>
+                                    <td>37.6922</td>
+                                    <td>-97.3364</td>
+                                </tr>
+                                <tr class="sample-row">
+                                    <td>St. Francis of Assisi</td>
+                                    <td>861 N Socora, Wichita, KS 67212</td>
+                                    <td>861 N Socora</td>
+                                    <td>Wichita</td>
+                                    <td>KS</td>
+                                    <td>67212</td>
+                                    <td>(316) 722-4404</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="template-actions">
+                    <button id="downloadParishTemplate" class="btn-template">
+                        <i class="fas fa-download"></i> Download Parish Template
+                    </button>
+                    <div class="field-notes">
+                        <p><span class="req">*</span> = Required &nbsp;|&nbsp; <strong>lat/lng:</strong> optional
+                            (auto-geocoded if omitted)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="section-card">
+                <div class="section-title"><i class="fas fa-upload"></i>
+                    <h2>Upload Parish CSV</h2>
+                </div>
+                <div class="upload-zone" id="parishUploadZone">
+                    <input type="file" id="parishCsvInput" accept=".csv" style="display:none;" />
+                    <div class="upload-content" id="parishUploadContent">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="upload-text">Drop your CSV here or <strong>click to browse</strong></p>
+                        <p class="upload-hint">Only .csv files accepted</p>
+                    </div>
+                    <div class="file-selected" id="parishFileSelected" style="display:none;">
+                        <i class="fas fa-file-csv file-icon"></i>
+                        <div class="file-info">
+                            <span class="file-name" id="parishFileName">file.csv</span>
+                            <span class="file-size" id="parishFileSize">0 KB</span>
+                        </div>
+                        <button type="button" class="file-remove" id="parishRemoveFile"><i
+                                class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="parishPreview" style="display:none;">
+                    <div class="preview-header">
+                        <h3><i class="fas fa-eye"></i> Preview (<span id="parishRowCount">0</span> rows)</h3>
+                        <div class="preview-stats">
+                            <span class="stat valid"><i class="fas fa-check-circle"></i> <span
+                                    id="parishValidCount">0</span> valid</span>
+                            <span class="stat invalid"><i class="fas fa-exclamation-triangle"></i> <span
+                                    id="parishInvalidCount">0</span> errors</span>
+                        </div>
+                    </div>
+                    <div class="preview-table-wrap">
+                        <table>
+                            <thead>
+                                <tr id="parishPreviewHead"></tr>
+                            </thead>
+                            <tbody id="parishPreviewBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="upload-actions">
+                        <button id="parishUploadBtn" class="btn-upload" disabled><i class="fas fa-cloud-upload-alt"></i>
+                            Upload All Valid Rows</button>
+                    </div>
+                </div>
+                <div id="parishResults" style="display:none;">
+                    <div class="results-card">
+                        <div class="results-icon"><i class="fas fa-check-circle"></i></div>
+                        <h3>Upload Complete</h3>
+                        <p id="parishResultsMsg"></p>
+                        <div class="results-actions">
+                            <button id="parishUploadAnother" class="btn-template"><i class="fas fa-redo"></i> Upload
+                                Another</button>
+                            <a href="/admin/dashboard.html" class="btn-upload" style="text-decoration:none;"><i
+                                    class="fas fa-arrow-right"></i> Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/admin/bulk-upload.js"></script>
+</body>
+
+</html>

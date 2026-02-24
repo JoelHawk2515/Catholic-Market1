@@ -1,254 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Local Business Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
+<head>
+  <meta charset="UTF-8" />
+  <title>Catholic Market - Find Catholic Businesses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="Discover and support local Catholic-owned businesses in your area. Find verified Catholic businesses on an interactive map." />
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <link rel="stylesheet" href="/style.css" />
-  </head>
-  <body>
-    <!-- Top Navigation Bar -->
-    <nav id="top-nav" class="hidden">
-      <img src="/img/logo.png" alt="Logo" class="logo-small" />
-      <button id="addBusinessBtn">Add Your Business</button>
-    </nav>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Business Form Modal -->
-    <div id="businessModal" class="modal">
-      <div class="modal-content">
-        <button class="close-modal" id="closeModal">&times;</button>
-        <h2>Add Your Business</h2>
-        <p class="subtitle">Share your business information with the community</p>
-        <form id="businessForm">
-          <div class="form-group">
-            <label for="businessName">Business Name *</label>
-            <input type="text" id="businessName" name="businessName" required />
-          </div>
-          <div class="form-group">
-            <label for="businessAddress">Address *</label>
-            <input type="text" id="businessAddress" name="businessAddress" required />
-          </div>
-          <div class="form-group">
-            <label for="businessStreet">Street</label>
-            <input type="text" id="businessStreet" name="businessStreet" placeholder="e.g., 123 Main St" />
-          </div>
-          <div class="form-group">
-            <label for="businessCity">City *</label>
-            <input type="text" id="businessCity" name="businessCity" required />
-          </div>
-          <div class="form-group">
-            <label for="businessState">State</label>
-            <input type="text" id="businessState" name="businessState" placeholder="e.g., KS" />
-          </div>
-          <div class="form-group">
-            <label for="businessZip">ZIP Code</label>
-            <input type="text" id="businessZip" name="businessZip" placeholder="e.g., 67202" />
-          </div>
-          <div class="form-group">
-            <label for="businessParish">Parish (Optional)</label>
-            <select id="businessParish" name="businessParish">
-              <option value="">-- Select a Parish --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="businessOwner">Owner Name</label>
-            <input type="text" id="businessOwner" name="businessOwner" />
-          </div>
-          <div class="form-group">
-            <label for="businessPhone">Phone Number</label>
-            <input type="tel" id="businessPhone" name="businessPhone" />
-          </div>
-          <div class="form-group">
-            <label for="businessEmail">Email</label>
-            <input type="email" id="businessEmail" name="businessEmail" />
-          </div>
-          <div class="form-group">
-            <label for="businessWebsite">Website</label>
-            <input type="url" id="businessWebsite" name="businessWebsite" />
-          </div>
-          <div class="form-group">
-            <label for="businessCategory">Category</label>
-            <input type="text" id="businessCategory" name="businessCategory" />
-          </div>
-          <div class="form-group">
-            <label for="businessDescription">Description</label>
-            <textarea id="businessDescription" name="businessDescription" rows="4"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="businessImage">Business Image</label>
-            <div class="image-upload-area" id="imageUploadArea">
-              <input type="file" id="businessImage" name="businessImage" accept="image/*" style="display: none;" />
-              <div class="upload-placeholder" id="uploadPlaceholder">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                <p>Drag & drop an image here or click to browse</p>
-                <p class="upload-hint">Max file size: 5MB</p>
-              </div>
-              <div class="image-preview" id="imagePreview" style="display: none;">
-                <img id="previewImg" src="" alt="Preview" />
-                <button type="button" class="remove-image-btn" id="removeImageBtn">✕</button>
-                <p class="image-name" id="imageName"></p>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Amenities</label>
-            <div class="amenities-checkboxes">
-              <label class="checkbox-label">
-                <input type="checkbox" id="hasWifi" name="hasWifi" />
-                <i class="fas fa-wifi"></i> Free WiFi
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" id="familyFriendly" name="familyFriendly" />
-                <i class="fas fa-users"></i> Family Friendly
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" id="hasParking" name="hasParking" />
-                <i class="fas fa-square-parking"></i> Parking Available
-              </label>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label>Business Hours</label>
-            <div class="schedule-container">
-              <div class="schedule-day">
-                <label class="day-label">Sunday</label>
-                <input type="time" id="sundayOpen" name="sundayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="sundayClose" name="sundayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Monday</label>
-                <input type="time" id="mondayOpen" name="mondayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="mondayClose" name="mondayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Tuesday</label>
-                <input type="time" id="tuesdayOpen" name="tuesdayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="tuesdayClose" name="tuesdayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Wednesday</label>
-                <input type="time" id="wednesdayOpen" name="wednesdayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="wednesdayClose" name="wednesdayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Thursday</label>
-                <input type="time" id="thursdayOpen" name="thursdayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="thursdayClose" name="thursdayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Friday</label>
-                <input type="time" id="fridayOpen" name="fridayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="fridayClose" name="fridayClose" placeholder="Close" />
-              </div>
-              <div class="schedule-day">
-                <label class="day-label">Saturday</label>
-                <input type="time" id="saturdayOpen" name="saturdayOpen" placeholder="Open" />
-                <span>to</span>
-                <input type="time" id="saturdayClose" name="saturdayClose" placeholder="Close" />
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
-            <button type="submit" class="btn-primary">Submit Business</button>
-          </div>
-        </form>
-      </div>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <!-- Top Navigation Bar (always visible) -->
+  <nav id="top-nav">
+    <div class="nav-left">
+      <img src="/img/logo.png" alt="Catholic Market" class="logo-small" />
     </div>
+    <div class="nav-center">
+      <form id="searchForm" class="nav-search-form">
+        <div class="nav-search-wrapper">
+          <i class="fas fa-search nav-search-icon"></i>
+          <input type="text" id="locationInput" placeholder="Search city, state, or zip..." autocomplete="off" />
+        </div>
+        <button type="submit" id="navSearchBtn">Search</button>
+      </form>
+    </div>
+    <div class="nav-right">
+      <button id="myLocationBtn" class="nav-btn nav-btn-location" title="Use My Location">
+        <i class="fas fa-location-crosshairs"></i>
+        <span class="btn-label">My Location</span>
+      </button>
+      <a href="/add-business.html" class="nav-btn nav-btn-primary">
+        <i class="fas fa-plus"></i>
+        <span class="btn-label">Add Business</span>
+      </a>
+    </div>
+  </nav>
 
-    <div id="hero">
-      <div class="hero-content">
-        <!-- Replace with your logo image -->
-        <img src="/img/logo.png" alt="Logo" class="logo" />
-        <h1>Find Catholic Businesses</h1>
-        <p class="subtitle">Discover and support local Catholic-owned businesses in your area</p>
-        
-        <form id="searchForm" class="search-form">
-          <input
-            type="text"
-            id="locationInput"
-            placeholder="Enter city, state, or zip code"
-            autocomplete="off"
-          />
-          <button type="submit">Search</button>
-        </form>
+  <!-- Main Layout (always visible, no hero) -->
+  <div id="mainLayout">
+    <div id="map"></div>
+    <div id="sidebar">
+      <!-- Sponsored Businesses Panel -->
+      <div id="sponsoredPanel" class="sponsored-panel" style="display: none;">
+        <div class="sponsored-panel-header">
+          <span class="sponsored-label"><i class="fas fa-star"></i> Sponsors</span>
+        </div>
+        <div id="sponsoredGrid" class="sponsored-grid"></div>
+      </div>
 
-        <!-- This button is hidden until geolocation is available -->
-        <button id="localButton" class="local-button" style="display: none">
-          Use My Location
+      <h2 id="sidebarTitle">Local Businesses</h2>
+      <div id="filterSection">
+        <button id="filterToggle" class="filter-toggle">
+          <span>🏷️ Filter by Tags</span>
+          <span id="filterArrow" class="arrow">▼</span>
         </button>
-
-        <p id="statusMessage" class="status-message"></p>
-        
-        <!-- Sponsored Businesses Rotator -->
-        <div id="sponsoredSection" style="display: none; margin: 2rem 0;">
-          <p style="color: #a7b0ce; font-size: 0.95rem; margin-bottom: 1.5rem; text-align: center;">This website is brought to you with the support of these businesses!</p>
-          <div class="sponsored-container">
-            <div id="sponsoredRotator" class="sponsored-rotator"></div>
-          </div>
-        </div>
-        
-        <!-- Popular Near You Section (shown only when location is enabled) -->
-        <div id="popularSection" class="popular-section" style="display: none;">
-          <div class="popular-container">
-            <h2 class="popular-title">Popular Near You</h2>
-            <div class="popular-scroll-wrapper">
-              <div id="popularBusinesses" class="popular-businesses"></div>
-            </div>
-          </div>
+        <div id="filterDropdown" class="filter-dropdown hidden">
+          <div id="tagsList" class="tags-list"></div>
+          <button id="clearFilters" class="clear-filters-btn">Clear All Filters</button>
         </div>
       </div>
+      <div id="businessList"></div>
     </div>
+  </div>
 
-    <div id="mainLayout" class="hidden">
-      <div id="map"></div>
-      <div id="sidebar">
-        <h2 id="sidebarTitle">Local Businesses</h2>
-        <div id="filterSection">
-          <button id="filterToggle" class="filter-toggle">
-            <span>🏷️ Filter by Tags</span>
-            <span id="filterArrow" class="arrow">▼</span>
-          </button>
-          <div id="filterDropdown" class="filter-dropdown hidden">
-            <div id="tagsList" class="tags-list"></div>
-            <button id="clearFilters" class="clear-filters-btn">Clear All Filters</button>
-          </div>
-        </div>
-        <div id="businessList"></div>
-      </div>
-    </div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- Leaflet JS -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
+  <script src="/app.js"></script>
+</body>
 
-    <script src="/app.js"></script>
-  </body>
 </html>
