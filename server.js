@@ -7,10 +7,11 @@ const session = require("express-session");
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const multer = require('multer');
 const fs = require('fs');
+const webpush = require('web-push');
 const connectDB = require("./db");
 
 // Import models
-const { sequelize, Admin, Parish, Business, Submission, Analytics } = require('./models-sequelize');
+const { sequelize, Admin, Parish, Business, Submission, Analytics, PushSubscription } = require('./models-sequelize');
 const { Op } = require('sequelize');
 
 const app = express();
@@ -18,6 +19,16 @@ const PORT = process.env.PORT || 3200;
 
 // Connect to MySQL
 connectDB();
+
+// Configure web-push VAPID keys
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_EMAIL || 'mailto:admin@catholicmarket.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+  console.log('✓ Web Push configured');
+}
 
 // Ensure business-images directory exists
 const uploadDir = path.join(__dirname, 'public', 'business-images');
@@ -1259,6 +1270,105 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
+
+// ============================================
+// PUSH NOTIFICATION ROUTES
+// ============================================
+
+// Public: Get VAPID public key
+app.get("/api/push/vapid-key", (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+});
+
+// Public: Subscribe to push notifications
+app.post("/api/push/subscribe", async (req, res) => {
+  try {
+    const { endpoint, keys } = req.body;
+
+    if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+      return res.status(400).json({ error: "Invalid subscription data" });
+    }
+
+    // Upsert subscription (update if endpoint exists, create if not)
+    await PushSubscription.upsert({
+      endpoint,
+      p256dh: keys.p256dh,
+      auth: keys.auth
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Push subscribe error:', error);
+    res.status(500).json({ error: "Failed to save subscription" });
+  }
+});
+
+// Admin: Send spotlight notification
+app.post("/api/admin/spotlight", requireAdmin, async (req, res) => {
+  try {
+    const { businessId } = req.body;
+
+    if (!businessId) {
+      return res.status(400).json({ error: "Business ID required" });
+    }
+
+    const business = await Business.findByPk(businessId);
+    if (!business) {
+      return res.status(404).json({ error: "Business not found" });
+    }
+
+    // Get all push subscriptions
+    const subscriptions = await PushSubscription.findAll();
+
+    if (subscriptions.length === 0) {
+      return res.json({ success: true, sent: 0, failed: 0, message: "No subscribers yet" });
+    }
+
+    const payload = JSON.stringify({
+      title: '⭐ Business Spotlight of the Week!',
+      body: `Check out ${business.name}! ${business.description || business.address}`,
+      url: `/?spotlight=${business.id}`,
+      businessId: business.id
+    });
+
+    let sent = 0;
+    let failed = 0;
+    const expiredEndpoints = [];
+
+    for (const sub of subscriptions) {
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: {
+          p256dh: sub.p256dh,
+          auth: sub.auth
+        }
+      };
+
+      try {
+        await webpush.sendNotification(pushSubscription, payload);
+        sent++;
+      } catch (err) {
+        failed++;
+        // Remove expired/invalid subscriptions
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          expiredEndpoints.push(sub.endpoint);
+        }
+      }
+    }
+
+    // Clean up expired subscriptions
+    if (expiredEndpoints.length > 0) {
+      await PushSubscription.destroy({ where: { endpoint: expiredEndpoints } });
+      console.log(`Removed ${expiredEndpoints.length} expired push subscriptions`);
+    }
+
+    console.log(`Spotlight sent for "${business.name}": ${sent} sent, ${failed} failed`);
+    res.json({ success: true, sent, failed, businessName: business.name });
+  } catch (error) {
+    console.error('Spotlight error:', error);
+    res.status(500).json({ error: "Failed to send spotlight" });
+  }
+});
 
 // Fallback: serve index.html for root
 app.get("*", (req, res) => {

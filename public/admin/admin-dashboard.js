@@ -30,11 +30,11 @@ const tabContents = document.querySelectorAll(".admin-tab-content");
 tabs.forEach(tab => {
   tab.addEventListener("click", () => {
     const tabName = tab.dataset.tab;
-    
+
     // Update active states
     tabs.forEach(t => t.classList.remove("active"));
     tabContents.forEach(tc => tc.classList.remove("active"));
-    
+
     tab.classList.add("active");
     document.getElementById(`${tabName}Tab`).classList.add("active");
   });
@@ -50,17 +50,17 @@ mapCoordinatesBtn.addEventListener("click", async () => {
   if (!confirm("This will geocode all businesses and parishes that don't have coordinates yet. This may take a while. Continue?")) {
     return;
   }
-  
+
   mapCoordinatesBtn.disabled = true;
   mapCoordinatesBtn.textContent = "🔄 Geocoding...";
-  
+
   try {
     const res = await fetch("/api/admin/geocode-all", {
       method: "POST"
     });
-    
+
     const result = await res.json();
-    
+
     if (res.ok) {
       alert(`Geocoding complete!\nBusinesses updated: ${result.businessesUpdated}\nParishes updated: ${result.parishesUpdated}`);
       loadApproved();
@@ -97,12 +97,12 @@ async function loadPending() {
   try {
     const res = await fetch("/api/admin/submissions/pending");
     const submissions = await res.json();
-    
+
     if (submissions.length === 0) {
       pendingList.innerHTML = '<p style="color: #a7b0ce;">No pending submissions</p>';
       return;
     }
-    
+
     pendingList.innerHTML = "";
     submissions.forEach(sub => {
       const card = createSubmissionCard(sub);
@@ -119,12 +119,12 @@ async function loadApproved() {
   try {
     const res = await fetch("/api/admin/businesses/approved");
     const businesses = await res.json();
-    
+
     if (businesses.length === 0) {
       approvedList.innerHTML = '<p style="color: #a7b0ce;">No approved businesses yet</p>';
       return;
     }
-    
+
     approvedList.innerHTML = "";
     businesses.forEach(biz => {
       const card = createApprovedCard(biz);
@@ -138,7 +138,7 @@ async function loadApproved() {
 function createSubmissionCard(sub) {
   const card = document.createElement("div");
   card.className = "admin-submission-card";
-  
+
   card.innerHTML = `
     <div class="admin-card-header">
       <h3>${sub.name}</h3>
@@ -163,7 +163,7 @@ function createSubmissionCard(sub) {
       <button class="btn-reject" onclick="rejectSubmission('${sub.id}')">✗ Reject</button>
     </div>
   `;
-  
+
   return card;
 }
 
@@ -172,9 +172,9 @@ function createApprovedCard(biz) {
   card.className = "admin-approved-card";
   const bizId = biz.id || biz._id;
   card.dataset.businessId = bizId;
-  
+
   const imageUrl = biz.imageUrl || '/img/default-business.png';
-  
+
   card.innerHTML = `
     <div class="admin-card-wrapper">
       <div class="admin-card-content">
@@ -198,6 +198,8 @@ function createApprovedCard(biz) {
           <button class="btn-edit" onclick="editBusiness('${bizId}')">✏️ Edit</button>
           <button class="btn-verify" onclick="toggleVerified('${bizId}', ${!biz.verified})">${biz.verified ? 'Unverify' : 'Verify'}</button>
           ${biz.verified ? `<button class="btn-sponsored" onclick="toggleSponsored('${bizId}', ${!biz.sponsored})" style="background: ${biz.sponsored ? '#9ca3af' : '#f59e0b'};">${biz.sponsored ? '⭐ Remove Sponsor' : '⭐ Make Sponsor'}</button>` : ''}
+          <button class="btn-spotlight" onclick="sendSpotlight('${bizId}', '${biz.name.replace(/'/g, "\\'")}')"
+            style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">🔔 Spotlight</button>
           <button class="btn-delete" onclick="deleteBusiness('${bizId}')">Delete</button>
         </div>
       </div>
@@ -206,20 +208,20 @@ function createApprovedCard(biz) {
       </div>
     </div>
   `;
-  
+
   return card;
 }
 
 async function approveSubmission(id, verified = true) {
   if (!confirm(`${verified ? 'Approve & verify' : 'Approve'} this business?`)) return;
-  
+
   try {
     const res = await fetch(`/api/admin/submissions/${id}/approve`, {
       method: "POST",
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ verified })
     });
-    
+
     if (res.ok) {
       alert(`Business ${verified ? 'approved and verified' : 'approved'}!`);
       loadPending();
@@ -235,12 +237,12 @@ async function approveSubmission(id, verified = true) {
 
 async function rejectSubmission(id) {
   if (!confirm("Reject this submission?")) return;
-  
+
   try {
     const res = await fetch(`/api/admin/submissions/${id}/reject`, {
       method: "POST"
     });
-    
+
     if (res.ok) {
       loadPending();
     } else {
@@ -259,7 +261,7 @@ async function toggleVerified(id, setVerified) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ verified: setVerified })
     });
-    
+
     if (res.ok) {
       loadApproved();
     } else {
@@ -278,7 +280,7 @@ async function toggleSponsored(id, setSponsored) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sponsored: setSponsored })
     });
-    
+
     if (res.ok) {
       loadApproved();
     } else {
@@ -296,21 +298,21 @@ async function editBusiness(id) {
     const res = await fetch('/api/admin/businesses/approved');
     const businesses = await res.json();
     const business = businesses.find(b => b.id === id || b._id === id);
-    
+
     if (!business) {
       alert('Business not found');
       return;
     }
-    
+
     let selectedEditImageFile = null;
-    
+
     // Create edit modal
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'flex';
-    
+
     const currentImageUrl = business.imageUrl || '/img/default-business.png';
-    
+
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
         <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
@@ -446,31 +448,31 @@ async function editBusiness(id) {
         </form>
       </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     // Image upload handling
     const editImageInput = document.getElementById('editBusinessImage');
     const editPreviewImg = document.getElementById('editPreviewImg');
     const editImageName = document.getElementById('editImageName');
     const editRemoveImageBtn = document.getElementById('editRemoveImageBtn');
-    
+
     editImageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      
+
       if (!file.type.startsWith('image/')) {
         alert('Please select an image file');
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         alert('Image file size must be less than 5MB');
         return;
       }
-      
+
       selectedEditImageFile = file;
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         editPreviewImg.src = e.target.result;
@@ -479,7 +481,7 @@ async function editBusiness(id) {
       };
       reader.readAsDataURL(file);
     });
-    
+
     editRemoveImageBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       selectedEditImageFile = null;
@@ -488,25 +490,25 @@ async function editBusiness(id) {
       editImageName.textContent = '';
       editRemoveImageBtn.style.display = 'none';
     });
-    
+
     // Handle form submission
     document.getElementById('editBusinessForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const businessId = business.id || business._id;
-      
+
       // If image was changed, upload it first
       if (selectedEditImageFile) {
         const imageFormData = new FormData();
         imageFormData.append('image', selectedEditImageFile);
         imageFormData.append('businessId', businessId);
-        
+
         try {
           const imageRes = await fetch(`/api/admin/businesses/${businessId}/image`, {
             method: 'POST',
             body: imageFormData
           });
-          
+
           if (!imageRes.ok) {
             alert('Failed to upload image');
             return;
@@ -517,10 +519,10 @@ async function editBusiness(id) {
           return;
         }
       }
-      
+
       // Update text fields
       const formData = new FormData(e.target);
-      
+
       // Collect schedule data
       const schedule = {
         sunday: { open: formData.get('sundayOpen') || null, close: formData.get('sundayClose') || null },
@@ -531,7 +533,7 @@ async function editBusiness(id) {
         friday: { open: formData.get('fridayOpen') || null, close: formData.get('fridayClose') || null },
         saturday: { open: formData.get('saturdayOpen') || null, close: formData.get('saturdayClose') || null }
       };
-      
+
       const updates = {
         name: formData.get('name'),
         address: formData.get('address'),
@@ -552,14 +554,14 @@ async function editBusiness(id) {
         hasParking: formData.get('hasParking') === 'on',
         schedule: schedule
       };
-      
+
       try {
         const res = await fetch(`/api/admin/businesses/${businessId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates)
         });
-        
+
         if (res.ok) {
           alert('Business updated successfully!');
           modal.remove();
@@ -572,7 +574,7 @@ async function editBusiness(id) {
         alert('Error updating business');
       }
     });
-    
+
   } catch (err) {
     console.error(err);
     alert('Error loading business data');
@@ -584,7 +586,7 @@ async function verifyBusiness(id) {
     const res = await fetch(`/api/admin/businesses/${id}/verify`, {
       method: "POST"
     });
-    
+
     if (res.ok) {
       loadApproved();
     } else {
@@ -597,21 +599,47 @@ async function verifyBusiness(id) {
 }
 
 async function deleteBusiness(id) {
-  if (!confirm("Delete this business? This cannot be undone.")) return;
-  
+  if (!confirm("Are you sure you want to delete this business? This cannot be undone.")) return;
+
   try {
-    const res = await fetch(`/api/admin/businesses/${id}`, {
-      method: "DELETE"
-    });
-    
+    const res = await fetch(`/api/admin/businesses/${id}`, { method: "DELETE" });
     if (res.ok) {
       loadApproved();
     } else {
-      alert("Failed to delete business");
+      const data = await res.json();
+      alert(data.error || "Failed to delete");
     }
   } catch (err) {
-    console.error(err);
-    alert("Error deleting business");
+    console.error("Delete error:", err);
+    alert("Failed to delete business");
+  }
+}
+
+// Send spotlight push notification
+async function sendSpotlight(businessId, businessName) {
+  if (!confirm(`Send a "Business Spotlight of the Week" push notification for "${businessName}" to all subscribers?`)) return;
+
+  try {
+    const res = await fetch('/api/admin/spotlight', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      if (data.sent === 0 && data.failed === 0) {
+        alert(`No subscribers yet. The notification will be sent once users subscribe.`);
+      } else {
+        alert(`🔔 Spotlight sent for "${data.businessName}"!\n\nSent: ${data.sent}\nFailed: ${data.failed}`);
+      }
+    } else {
+      alert(data.error || 'Failed to send spotlight');
+    }
+  } catch (err) {
+    console.error('Spotlight error:', err);
+    alert('Failed to send spotlight notification');
   }
 }
 
@@ -620,12 +648,12 @@ async function loadParishes() {
   try {
     const res = await fetch("/api/admin/parishes");
     const parishes = await res.json();
-    
+
     if (parishes.length === 0) {
       parishesList.innerHTML = '<p style="color: #a7b0ce;">No parishes yet</p>';
       return;
     }
-    
+
     parishesList.innerHTML = "";
     parishes.forEach(parish => {
       const card = createParishCard(parish);
@@ -641,7 +669,7 @@ function createParishCard(parish) {
   card.className = "admin-approved-card";
   const parishId = parish.id || parish._id;
   card.dataset.parishId = parishId;
-  
+
   card.innerHTML = `
     <div class="admin-card-header">
       <h3>⛪ ${parish.name}</h3>
@@ -658,7 +686,7 @@ function createParishCard(parish) {
       <button class="btn-delete" onclick="deleteParish('${parishId}')">Delete</button>
     </div>
   `;
-  
+
   return card;
 }
 
@@ -667,16 +695,16 @@ async function editParish(id) {
     const res = await fetch('/api/admin/parishes');
     const parishes = await res.json();
     const parish = parishes.find(p => p.id === id || p._id === id);
-    
+
     if (!parish) {
       alert('Parish not found');
       return;
     }
-    
+
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'flex';
-    
+
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
         <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
@@ -740,12 +768,12 @@ async function editParish(id) {
         </form>
       </div>
     `;
-    
+
     document.body.appendChild(modal);
-    
+
     document.getElementById('editParishForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const formData = new FormData(e.target);
       const updates = {
         name: formData.get('name'),
@@ -759,7 +787,7 @@ async function editParish(id) {
         lat: parseFloat(formData.get('lat')),
         lng: parseFloat(formData.get('lng'))
       };
-      
+
       try {
         const parishId = parish.id || parish._id;
         const res = await fetch(`/api/admin/parishes/${parishId}`, {
@@ -767,7 +795,7 @@ async function editParish(id) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updates)
         });
-        
+
         if (res.ok) {
           alert('Parish updated successfully!');
           modal.remove();
@@ -780,7 +808,7 @@ async function editParish(id) {
         alert('Error updating parish');
       }
     });
-    
+
   } catch (err) {
     console.error(err);
     alert('Error loading parish data');
@@ -789,12 +817,12 @@ async function editParish(id) {
 
 async function deleteParish(id) {
   if (!confirm("Delete this parish? This cannot be undone.")) return;
-  
+
   try {
     const res = await fetch(`/api/admin/parishes/${id}`, {
       method: "DELETE"
     });
-    
+
     if (res.ok) {
       loadParishes();
     } else {
@@ -813,11 +841,11 @@ loadApproved();
 // Add Business Modal
 function showAddBusinessModal() {
   let selectedImageFile = null;
-  
+
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.style.display = 'flex';
-  
+
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 700px;">
       <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
@@ -949,9 +977,9 @@ function showAddBusinessModal() {
       </form>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
-  
+
   // Image upload handling
   const imageInput = document.getElementById('addBusinessImageInput');
   const uploadArea = document.getElementById('addBusinessImageUploadArea');
@@ -960,30 +988,30 @@ function showAddBusinessModal() {
   const previewImg = document.getElementById('addBusinessPreviewImg');
   const imageName = document.getElementById('addBusinessImageName');
   const removeBtn = document.getElementById('addBusinessRemoveImageBtn');
-  
+
   uploadArea.addEventListener('click', () => imageInput.click());
-  
+
   uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('drag-over');
   });
-  
+
   uploadArea.addEventListener('dragleave', () => {
     uploadArea.classList.remove('drag-over');
   });
-  
+
   uploadArea.addEventListener('drop', (e) => {
     e.preventDefault();
     uploadArea.classList.remove('drag-over');
     const file = e.dataTransfer.files[0];
     if (file) handleImageFile(file);
   });
-  
+
   imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) handleImageFile(file);
   });
-  
+
   removeBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     selectedImageFile = null;
@@ -991,20 +1019,20 @@ function showAddBusinessModal() {
     placeholder.style.display = 'flex';
     preview.style.display = 'none';
   });
-  
+
   function handleImageFile(file) {
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
-    
+
     if (file.size > 5 * 1024 * 1024) {
       alert('Image file size must be less than 5MB');
       return;
     }
-    
+
     selectedImageFile = file;
-    
+
     const reader = new FileReader();
     reader.onload = (e) => {
       previewImg.src = e.target.result;
@@ -1014,24 +1042,24 @@ function showAddBusinessModal() {
     };
     reader.readAsDataURL(file);
   }
-  
+
   // Form submission
   document.getElementById('addBusinessForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
-    
+
     // Add image if selected
     if (selectedImageFile) {
       formData.append('image', selectedImageFile);
     }
-    
+
     // Convert checkboxes to boolean
     formData.set('verified', formData.get('verified') === 'on');
     formData.set('hasWifi', formData.get('hasWifi') === 'on');
     formData.set('familyFriendly', formData.get('familyFriendly') === 'on');
     formData.set('hasParking', formData.get('hasParking') === 'on');
-    
+
     // Collect schedule data
     const schedule = {
       sunday: { open: formData.get('sundayOpen') || null, close: formData.get('sundayClose') || null },
@@ -1043,13 +1071,13 @@ function showAddBusinessModal() {
       saturday: { open: formData.get('saturdayOpen') || null, close: formData.get('saturdayClose') || null }
     };
     formData.set('schedule', JSON.stringify(schedule));
-    
+
     try {
       const res = await fetch('/api/admin/businesses', {
         method: 'POST',
         body: formData
       });
-      
+
       if (res.ok) {
         alert('Business added successfully!');
         modal.remove();
@@ -1070,7 +1098,7 @@ function showAddParishModal() {
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.style.display = 'flex';
-  
+
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 700px;">
       <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
@@ -1123,13 +1151,13 @@ function showAddParishModal() {
       </form>
     </div>
   `;
-  
+
   document.body.appendChild(modal);
-  
+
   // Form submission
   document.getElementById('addParishForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
     const parishData = {
       name: formData.get('name'),
@@ -1141,14 +1169,14 @@ function showAddParishModal() {
       website: formData.get('website') || null,
       massTimes: formData.get('massTimes') || null
     };
-    
+
     try {
       const res = await fetch('/api/admin/parishes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parishData)
       });
-      
+
       if (res.ok) {
         alert('Parish added successfully!');
         modal.remove();

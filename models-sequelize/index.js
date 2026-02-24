@@ -37,6 +37,7 @@ const Parish = require('./Parish')(sequelize);
 const Business = require('./Business')(sequelize);
 const Submission = require('./Submission')(sequelize);
 const Analytics = require('./Analytics')(sequelize);
+const PushSubscription = require('./PushSubscription')(sequelize);
 
 // Define relationships
 Business.belongsTo(Parish, { foreignKey: 'parishId', as: 'parish' });
@@ -54,5 +55,6 @@ module.exports = {
   Parish,
   Business,
   Submission,
-  Analytics
+  Analytics,
+  PushSubscription
 };

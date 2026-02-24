@@ -632,6 +632,7 @@ function renderBusinesses(businesses, bounds) {
   businesses.forEach((b, index) => {
     const card = document.createElement("div");
     card.className = "business-card";
+    card.setAttribute("data-business-id", b.id);
 
     if (b.verified) {
       const verifiedBadge = document.createElement("div");

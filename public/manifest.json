@@ -1,0 +1,30 @@
+{
+    "name": "Catholic Market",
+    "short_name": "CathMarket",
+    "description": "Discover and support local Catholic-owned businesses in your area.",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#05070b",
+    "background_color": "#05070b",
+    "icons": [
+        {
+            "src": "/img/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/img/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "shopping",
+        "lifestyle"
+    ],
+    "lang": "en-US"
+}

@@ -7,6 +7,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description"
     content="Discover and support local Catholic-owned businesses in your area. Find verified Catholic businesses on an interactive map." />
+  <link rel="icon" type="image/png" href="/img/logo.png" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#05070b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/img/icon-192.png" />
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -52,7 +60,7 @@
     </div>
   </nav>
 
-  <!-- Main Layout (always visible, no hero) -->
+  <!-- Main Layout -->
   <div id="mainLayout">
     <div id="map"></div>
     <div id="sidebar">
@@ -84,6 +92,83 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script src="/app.js"></script>
+
+  <!-- Service Worker & Push Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('SW registered:', registration.scope);
+
+          // Request notification permission
+          if ('Notification' in window && Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              await subscribeToPush(registration);
+            }
+          } else if (Notification.permission === 'granted') {
+            await subscribeToPush(registration);
+          }
+        } catch (err) {
+          console.error('SW registration failed:', err);
+        }
+      });
+    }
+
+    async function subscribeToPush(registration) {
+      try {
+        // Get VAPID public key from server
+        const res = await fetch('/api/push/vapid-key');
+        const { publicKey } = await res.json();
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
+        });
+
+        // Send subscription to server
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(subscription)
+        });
+
+        console.log('Push subscription saved');
+      } catch (err) {
+        console.error('Push subscription failed:', err);
+      }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    // Handle spotlight URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const spotlightId = urlParams.get('spotlight');
+    if (spotlightId) {
+      // Wait for businesses to load, then scroll to and highlight the spotlighted business
+      const checkForBusiness = setInterval(() => {
+        const card = document.querySelector(`[data-business-id="${spotlightId}"]`);
+        if (card) {
+          clearInterval(checkForBusiness);
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.add('spotlight-highlight');
+          setTimeout(() => card.classList.remove('spotlight-highlight'), 4000);
+        }
+      }, 500);
+      // Stop checking after 10 seconds
+      setTimeout(() => clearInterval(checkForBusiness), 10000);
+    }
+  </script>
 </body>
 
 </html>
