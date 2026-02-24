@@ -686,8 +686,12 @@ app.delete("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
       return res.status(404).json({ error: "Business not found" });
     }
 
+    // Delete related analytics records first (FK constraint)
+    await Analytics.destroy({ where: { businessId: id } });
+
     await business.destroy();
 
+    console.log(`Deleted business "${business.name}" (id: ${id}) and its analytics`);
     res.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
@@ -884,8 +888,13 @@ app.delete("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
       return res.status(404).json({ error: "Parish not found" });
     }
 
+    // Nullify parishId on related businesses and submissions (FK constraints)
+    await Business.update({ parishId: null }, { where: { parishId: id } });
+    await Submission.update({ parishId: null }, { where: { parishId: id } });
+
     await parish.destroy();
 
+    console.log(`Deleted parish "${parish.name}" (id: ${id})`);
     res.json({ success: true });
   } catch (error) {
     console.error('Delete error:', error);
