@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Catholic Market - Find Catholic Businesses</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
   <meta name="description"
     content="Discover and support local Catholic-owned businesses in your area. Find verified Catholic businesses on an interactive map." />
   <link rel="icon" type="image/png" href="/img/logo.png" />
@@ -57,6 +57,10 @@
       </form>
     </div>
     <div class="nav-right">
+      <button id="notificationBtn" class="nav-btn nav-btn-primary pwa-mobile-only" title="Enable Notifications"
+        style="display: none;">
+        <i class="fas fa-bell"></i>
+      </button>
       <button id="myLocationBtn" class="nav-btn nav-btn-location" title="Use My Location">
         <i class="fas fa-location-crosshairs"></i>
         <span class="btn-label">My Location</span>
@@ -113,7 +117,24 @@
           const isStandalone = window.matchMedia('(display-mode: standalone)').matches
             || window.navigator.standalone === true;
 
+          const notifBtn = document.getElementById('notificationBtn');
+
           if ('Notification' in window) {
+            // Show notification button on Mobile PWA if not already granted
+            if (isStandalone && window.innerWidth <= 768 && Notification.permission !== 'granted') {
+              if (notifBtn) {
+                notifBtn.style.display = 'inline-flex';
+                notifBtn.addEventListener('click', async () => {
+                  const permission = await Notification.requestPermission();
+                  if (permission === 'granted') {
+                    await subscribeToPush(registration);
+                    notifBtn.style.display = 'none';
+                    alert('Notifications enabled!');
+                  }
+                });
+              }
+            }
+
             if (Notification.permission === 'granted') {
               // Already granted — silently subscribe
               await subscribeToPush(registration);
@@ -127,6 +148,7 @@
                   const permission = await Notification.requestPermission();
                   if (permission === 'granted') {
                     await subscribeToPush(registration);
+                    if (notifBtn) notifBtn.style.display = 'none';
                   }
                 }, 1500);
               }
