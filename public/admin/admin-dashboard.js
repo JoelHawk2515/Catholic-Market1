@@ -359,6 +359,12 @@ async function editBusiness(id) {
           </div>
           
           <div>
+            <button type="button" id="editAutoFillCoordsBtn" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i class="fas fa-map-marker-alt"></i> Auto-fill Coordinates from Address
+            </button>
+          </div>
+          
+          <div>
             <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Owner</label>
             <input type="text" name="owner" value="${business.owner || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
           </div>
@@ -489,6 +495,66 @@ async function editBusiness(id) {
       editPreviewImg.src = currentImageUrl;
       editImageName.textContent = '';
       editRemoveImageBtn.style.display = 'none';
+    });
+
+    // Auto-fill coordinates button
+    document.getElementById('editAutoFillCoordsBtn').addEventListener('click', async () => {
+      const form = document.getElementById('editBusinessForm');
+      const address = form.querySelector('[name="address"]').value;
+      const city = form.querySelector('[name="city"]').value;
+      const state = form.querySelector('[name="state"]').value;
+      const zip = form.querySelector('[name="zip"]').value;
+
+      if (!address) {
+        alert('Please enter an address first');
+        return;
+      }
+
+      const btn = document.getElementById('editAutoFillCoordsBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Looking up coordinates...';
+      btn.disabled = true;
+
+      try {
+        // Build full address string
+        const parts = [address];
+        if (city) parts.push(city);
+        if (state) parts.push(state);
+        if (zip) parts.push(zip);
+        const fullAddress = parts.join(', ');
+
+        const url = new URL('https://nominatim.openstreetmap.org/search');
+        url.searchParams.append('q', fullAddress);
+        url.searchParams.append('format', 'json');
+        url.searchParams.append('limit', '1');
+
+        const response = await fetch(url.toString(), {
+          headers: { 'User-Agent': 'CatholicMarket/1.0' }
+        });
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          form.querySelector('[name="lat"]').value = lat;
+          form.querySelector('[name="lng"]').value = lng;
+          btn.innerHTML = '<i class="fas fa-check"></i> Coordinates filled!';
+          btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+          }, 2000);
+        } else {
+          alert('Could not find coordinates for this address. Try adding more details (city, state, zip).');
+          btn.innerHTML = originalText;
+        }
+      } catch (err) {
+        console.error('Geocoding error:', err);
+        alert('Error looking up coordinates. Please try again.');
+        btn.innerHTML = originalText;
+      }
+
+      btn.disabled = false;
     });
 
     // Handle form submission
