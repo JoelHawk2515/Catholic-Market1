@@ -1413,10 +1413,9 @@ body {
 
   #map {
     width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    flex-shrink: 0;
-    min-height: unset;
+    height: 33.33vh;
+    max-height: 33.33vh;
+    flex: none;
   }
 
   #sidebar {
