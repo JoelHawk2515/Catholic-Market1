@@ -500,6 +500,12 @@ body {
   /*padding-top: 60px;*/
 }
 
+@media only screen and (min-width: 768px) {
+  #mainLayout {
+    padding-top: 60px;
+  }
+}
+
 #map {
   flex: 2;
   min-width: 0;
