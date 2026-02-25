@@ -1450,6 +1450,9 @@ body {
 
   .nav-search-form input {
     padding: 0.5rem 0.75rem;
+    font-size: 16px;
+    /* Prevents auto-zoom on iOS */
+    flex: 1;
   }
 
   .nav-search-form button[type="submit"] {
