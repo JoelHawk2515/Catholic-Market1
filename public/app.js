@@ -49,6 +49,7 @@ let parishesData = {}; // Store parish data by ID
 
 // Church icon for parishes (using SVG data URL for custom marker)
 const churchIconUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOGI0NWZmIj48cGF0aCBkPSJNMTIgMmwtMSAxdjJIOXYyaDJ2MmgtMnYyaDJ2MWgtMXY4aDR2LThoLTF2LTFoMnYtMmgtMlY3aDJWNWgtMlYzbC0xLTF6TTcgMTBoLTJ2Mmgydi0yek0xNyAxMGgydjJoLTJ2LTJ6Ii8+PC9zdmc+';
+const businessIconUrl = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
 
 // ==========================================
 // INITIALIZATION - Auto-load Wichita, KS
@@ -618,8 +619,10 @@ function renderParishes(parishes) {
   });
 
   parishes.forEach((p) => {
-    if (typeof p.lat === "number" && typeof p.lng === "number") {
-      const marker = L.marker([p.lat, p.lng], { icon: churchIcon }).addTo(markersLayer);
+    const pLat = parseFloat(p.lat);
+    const pLng = parseFloat(p.lng);
+    if (!isNaN(pLat) && !isNaN(pLng)) {
+      const marker = L.marker([pLat, pLng], { icon: churchIcon }).addTo(markersLayer);
       marker.bindPopup(
         `<div style="text-align: center;">
           <strong style="color: #8b45ff;">⛪ ${p.name}</strong><br>
@@ -637,6 +640,13 @@ function renderParishes(parishes) {
 
 function renderBusinesses(businesses, bounds) {
   console.log('renderBusinesses called with:', businesses.length, 'businesses');
+
+  const businessIcon = L.icon({
+    iconUrl: businessIconUrl,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32]
+  });
 
   businessListEl.innerHTML = "";
 
@@ -774,7 +784,11 @@ function renderBusinesses(businesses, bounds) {
     if (parishBadge) info.appendChild(parishBadge);
     if (amenitiesDiv) info.appendChild(amenitiesDiv);
     if (hoursDiv) info.appendChild(hoursDiv);
-    if (typeof b.lat === "number" && typeof b.lng === "number") {
+
+    const bLat = parseFloat(b.lat);
+    const bLng = parseFloat(b.lng);
+
+    if (!isNaN(bLat) && !isNaN(bLng)) {
       info.appendChild(directionsBtn);
     }
 
@@ -782,8 +796,8 @@ function renderBusinesses(businesses, bounds) {
     card.appendChild(info);
     businessListEl.appendChild(card);
 
-    if (typeof b.lat === "number" && typeof b.lng === "number") {
-      const marker = L.marker([b.lat, b.lng]).addTo(markersLayer);
+    if (!isNaN(bLat) && !isNaN(bLng)) {
+      const marker = L.marker([bLat, bLng], { icon: businessIcon }).addTo(markersLayer);
       marker.bindPopup(
         `<strong>${b.name}</strong><br>${b.address || ""}${b.website
           ? `<br><a href="${b.website}" target="_blank">Website</a>`
@@ -793,7 +807,7 @@ function renderBusinesses(businesses, bounds) {
 
       card.addEventListener("click", () => {
         trackBusinessClick(b._id || b.id, b.name, 'card_click');
-        map.setView([b.lat, b.lng], Math.max(map.getZoom(), 15));
+        map.setView([bLat, bLng], Math.max(map.getZoom(), 15));
         marker.openPopup();
       });
     }
