@@ -894,7 +894,7 @@ function openMobileDetail(b, hoursDiv) {
     </div>
   `;
 
-  document.getElementById('sidebar').appendChild(panel);
+  document.body.appendChild(panel);
 
   // Trigger animation
   requestAnimationFrame(() => {

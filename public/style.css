@@ -1556,13 +1556,13 @@ body {
      MOBILE DETAIL PANEL
      ======================================== */
   .mobile-detail-panel {
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: calc(56px + 33.33vh);
     left: 0;
     right: 0;
     bottom: 0;
     background: #0d0f16;
-    z-index: 100;
+    z-index: 200;
     display: flex;
     flex-direction: column;
     transform: translateY(100%);
@@ -1615,7 +1615,7 @@ body {
   .mobile-detail-body {
     flex: 1;
     overflow-y: auto;
-    padding: 1.25rem 1.25rem 2rem;
+    padding: 1.25rem 1.25rem 5rem;
     -webkit-overflow-scrolling: touch;
   }
 
