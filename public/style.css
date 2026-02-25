@@ -1410,9 +1410,9 @@ body {
   }
 
   #top-nav {
-    padding: 0 0.75rem;
+    padding: env(safe-area-inset-top, 0) 0.75rem 0;
     gap: 0;
-    height: 56px;
+    height: calc(56px + env(safe-area-inset-top, 0));
     position: sticky;
     top: 0;
     flex-shrink: 0;
@@ -1577,7 +1577,7 @@ body {
      ======================================== */
   .mobile-detail-panel {
     position: fixed;
-    top: calc(56px + 33.33vh);
+    top: calc(56px + env(safe-area-inset-top, 0) + 33.33vh);
     left: 0;
     right: 0;
     bottom: 0;
