@@ -497,7 +497,7 @@ body {
 #mainLayout {
   display: flex;
   height: 100vh;
-  padding-top: 60px;
+  /*padding-top: 60px;*/
 }
 
 #map {
