@@ -1391,8 +1391,6 @@ body {
   body {
     display: flex;
     flex-direction: column;
-    padding-top: constant(safe-area-inset-top);
-    padding-top: env(safe-area-inset-top);
   }
 
   .mobile-only-btn {
@@ -1413,12 +1411,27 @@ body {
 
   #top-nav {
     padding: 0 0.75rem;
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top, 0);
     gap: 0;
-    height: 56px;
-    position: sticky;
+    height: calc(56px + constant(safe-area-inset-top));
+    height: calc(56px + env(safe-area-inset-top, 0));
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     flex-shrink: 0;
     justify-content: space-between;
+    z-index: 1000;
+  }
+
+  #mainLayout {
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    margin-top: calc(56px + constant(safe-area-inset-top));
+    margin-top: calc(56px + env(safe-area-inset-top, 0));
   }
 
   .nav-left {
@@ -1509,12 +1522,7 @@ body {
     padding: 1.5rem;
   }
 
-  #mainLayout {
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
+
 
   #map {
     width: 100%;
