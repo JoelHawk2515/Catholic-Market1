@@ -1391,6 +1391,8 @@ body {
   body {
     display: flex;
     flex-direction: column;
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
   }
 
   .mobile-only-btn {
@@ -1410,9 +1412,9 @@ body {
   }
 
   #top-nav {
-    padding: env(safe-area-inset-top, 0) 0.75rem 0;
+    padding: 0 0.75rem;
     gap: 0;
-    height: calc(56px + env(safe-area-inset-top, 0));
+    height: 56px;
     position: sticky;
     top: 0;
     flex-shrink: 0;
@@ -1577,6 +1579,7 @@ body {
      ======================================== */
   .mobile-detail-panel {
     position: fixed;
+    top: calc(56px + constant(safe-area-inset-top) + 33.33vh);
     top: calc(56px + env(safe-area-inset-top, 0) + 33.33vh);
     left: 0;
     right: 0;
