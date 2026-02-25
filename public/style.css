@@ -1411,11 +1411,8 @@ body {
 
   #top-nav {
     padding: 0 0.75rem;
-    padding-top: constant(safe-area-inset-top);
-    padding-top: env(safe-area-inset-top, 0);
     gap: 0;
-    height: calc(56px + constant(safe-area-inset-top));
-    height: calc(56px + env(safe-area-inset-top, 0));
+    height: 56px;
     position: fixed;
     top: 0;
     left: 0;
@@ -1430,8 +1427,7 @@ body {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    margin-top: calc(56px + constant(safe-area-inset-top));
-    margin-top: calc(56px + env(safe-area-inset-top, 0));
+    margin-top: 56px;
   }
 
   .nav-left {
@@ -1587,8 +1583,7 @@ body {
      ======================================== */
   .mobile-detail-panel {
     position: fixed;
-    top: calc(56px + constant(safe-area-inset-top) + 33.33vh);
-    top: calc(56px + env(safe-area-inset-top, 0) + 33.33vh);
+    top: calc(56px + 33.33vh);
     left: 0;
     right: 0;
     bottom: 0;
