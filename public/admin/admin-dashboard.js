@@ -153,6 +153,7 @@ function createSubmissionCard(sub) {
       ${sub.email ? `<p><strong>Email:</strong> ${sub.email}</p>` : ''}
       ${sub.website ? `<p><strong>Website:</strong> <a href="${sub.website}" target="_blank">${sub.website}</a></p>` : ''}
       ${sub.category ? `<p><strong>Category:</strong> ${sub.category}</p>` : ''}
+      ${sub.tags ? `<p><strong>Tags:</strong> ${sub.tags}</p>` : ''}
       ${sub.parishName ? `<p><strong>Parish:</strong> ${sub.parishName}</p>` : ''}
       ${sub.description ? `<p><strong>Description:</strong> ${sub.description}</p>` : ''}
       <p style="font-size: 0.8rem; color: #8f96b4; margin-top: 1rem;">Submitted: ${new Date(sub.submittedAt).toLocaleString()}</p>
@@ -192,6 +193,7 @@ function createApprovedCard(biz) {
           ${biz.email ? `<p><strong>Email:</strong> ${biz.email}</p>` : ''}
           ${biz.website ? `<p><strong>Website:</strong> <a href="${biz.website}" target="_blank">${biz.website}</a></p>` : ''}
           ${biz.category ? `<p><strong>Category:</strong> ${biz.category}</p>` : ''}
+          ${biz.tags ? `<p><strong>Tags:</strong> ${biz.tags}</p>` : ''}
           ${biz.description ? `<p><strong>Description:</strong> ${biz.description}</p>` : ''}
         </div>
         <div class="admin-card-actions">
@@ -387,6 +389,11 @@ async function editBusiness(id) {
           <div>
             <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Category</label>
             <input type="text" name="category" value="${business.category || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Tags <span style="font-size: 0.8rem; color: #6b7380;">(comma-separated, e.g. cafe, bakery, restaurant)</span></label>
+            <input type="text" name="tags" value="${business.tags || ''}" placeholder="e.g., cafe, bakery, family" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
           </div>
           
           <div>
@@ -615,6 +622,7 @@ async function editBusiness(id) {
         website: formData.get('website') || null,
         category: formData.get('category') || null,
         description: formData.get('description') || null,
+        tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(t => t.length > 0) : [],
         hasWifi: formData.get('hasWifi') === 'on',
         familyFriendly: formData.get('familyFriendly') === 'on',
         hasParking: formData.get('hasParking') === 'on',
@@ -970,6 +978,11 @@ function showAddBusinessModal() {
         <div>
           <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Category</label>
           <input type="text" name="category" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+        </div>
+        
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Tags <span style="font-size: 0.8rem; color: #6b7380;">(comma-separated, e.g. cafe, bakery, restaurant)</span></label>
+          <input type="text" name="tags" placeholder="e.g., cafe, bakery, family" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
         </div>
         
         <div>

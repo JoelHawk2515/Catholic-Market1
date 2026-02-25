@@ -467,7 +467,7 @@ app.get("/api/admin/businesses/approved", requireAdmin, async (req, res) => {
     const formatted = businesses.map(biz => ({
       ...biz.toJSON(),
       id: biz.id.toString(),
-      tags: biz.tags.join(', ') // Convert array back to string for display
+      tags: Array.isArray(biz.tags) ? biz.tags.join(', ') : (biz.tags || '')
     }));
 
     res.json(formatted);
@@ -507,7 +507,7 @@ app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (r
       lat: null,
       lng: null,
       imageUrl: req.file ? `/business-images/${req.file.filename}` : null,
-      tags: category ? [category] : []
+      tags: req.body.tags ? (Array.isArray(req.body.tags) ? req.body.tags : req.body.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)) : (category ? [category] : [])
     });
 
     // Geocode the address immediately after creation
@@ -592,7 +592,7 @@ app.post("/api/admin/businesses/:id/sponsor", requireAdmin, async (req, res) => 
 app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, hasWifi, familyFriendly, hasParking, schedule } = req.body;
+    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, tags, hasWifi, familyFriendly, hasParking, schedule } = req.body;
 
     const business = await Business.findByPk(id);
 
@@ -626,6 +626,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
     if (familyFriendly !== undefined) business.familyFriendly = familyFriendly;
     if (hasParking !== undefined) business.hasParking = hasParking;
     if (schedule !== undefined) business.schedule = schedule;
+    if (tags !== undefined) business.tags = tags;
 
     await business.save();
 

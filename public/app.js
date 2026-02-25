@@ -681,18 +681,23 @@ function renderBusinesses(businesses, bounds) {
     title.textContent = b.name;
 
     const addr = document.createElement("p");
+    addr.className = "biz-address";
     addr.textContent = b.address;
 
     const owner = document.createElement("p");
+    owner.className = "biz-detail";
     if (b.owner) owner.textContent = `Owner: ${b.owner}`;
 
     const phone = document.createElement("p");
+    phone.className = "biz-detail";
     if (b.phone) phone.textContent = `Phone: ${b.phone}`;
 
     const category = document.createElement("p");
+    category.className = "biz-detail";
     if (b.category) category.textContent = `Category: ${b.category}`;
 
     const website = document.createElement("p");
+    website.className = "biz-detail";
     if (b.website) {
       const a = document.createElement("a");
       a.href = b.website;
@@ -703,6 +708,7 @@ function renderBusinesses(businesses, bounds) {
     }
 
     const email = document.createElement("p");
+    email.className = "biz-detail";
     if (b.email) {
       const a = document.createElement("a");
       a.href = `mailto:${b.email}`;
@@ -711,19 +717,20 @@ function renderBusinesses(businesses, bounds) {
     }
 
     const desc = document.createElement("p");
+    desc.className = "biz-detail";
     if (b.description) desc.textContent = b.description;
 
     let parishBadge = null;
     if (b.parishId && parishesData[b.parishId]) {
       parishBadge = document.createElement("div");
-      parishBadge.className = "parish-badge";
+      parishBadge.className = "parish-badge biz-detail";
       parishBadge.innerHTML = `<span class="church-icon">⛪</span><span>${parishesData[b.parishId].name}</span>`;
     }
 
     let amenitiesDiv = null;
     if (b.hasWifi || b.familyFriendly || b.hasParking) {
       amenitiesDiv = document.createElement("div");
-      amenitiesDiv.className = "amenities-icons";
+      amenitiesDiv.className = "amenities-icons biz-detail";
 
       if (b.hasWifi) {
         const wifiIcon = document.createElement("span");
@@ -765,7 +772,7 @@ function renderBusinesses(businesses, bounds) {
     }
 
     const directionsBtn = document.createElement("button");
-    directionsBtn.className = "directions-btn";
+    directionsBtn.className = "directions-btn biz-detail";
     directionsBtn.innerHTML = "📍 Get Directions";
     directionsBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -809,9 +816,116 @@ function renderBusinesses(businesses, bounds) {
         trackBusinessClick(b._id || b.id, b.name, 'card_click');
         map.setView([bLat, bLng], Math.max(map.getZoom(), 15));
         marker.openPopup();
+
+        // On mobile, open the detail panel
+        if (window.innerWidth <= 768) {
+          openMobileDetail(b, hoursDiv);
+        }
       });
     }
   });
+}
+
+// ==========================================
+// MOBILE DETAIL PANEL
+// ==========================================
+
+function openMobileDetail(b, hoursDiv) {
+  // Remove any existing panel
+  const existing = document.getElementById('mobileDetailPanel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'mobileDetailPanel';
+  panel.className = 'mobile-detail-panel';
+
+  const bLat = parseFloat(b.lat);
+  const bLng = parseFloat(b.lng);
+
+  let hoursHTML = '';
+  if (b.schedule) {
+    try {
+      const status = getBusinessStatus(b.schedule);
+      if (status) {
+        hoursHTML = `<div class="business-hours ${status.isOpen ? 'open' : 'closed'}"><i class="fas fa-clock"></i> ${status.message}</div>`;
+      }
+    } catch (e) { }
+  }
+
+  let amenitiesHTML = '';
+  if (b.hasWifi || b.familyFriendly || b.hasParking) {
+    amenitiesHTML = '<div class="amenities-icons" style="margin-top: 0.5rem;">';
+    if (b.hasWifi) amenitiesHTML += '<span class="amenity-icon wifi-icon" title="Free WiFi"><i class="fas fa-wifi"></i></span>';
+    if (b.familyFriendly) amenitiesHTML += '<span class="amenity-icon family-icon" title="Family Friendly"><i class="fas fa-users"></i></span>';
+    if (b.hasParking) amenitiesHTML += '<span class="amenity-icon parking-icon" title="Parking Available"><i class="fas fa-square-parking"></i></span>';
+    amenitiesHTML += '</div>';
+  }
+
+  let parishHTML = '';
+  if (b.parishId && parishesData[b.parishId]) {
+    parishHTML = `<div class="parish-badge"><span class="church-icon">⛪</span><span>${parishesData[b.parishId].name}</span></div>`;
+  }
+
+  panel.innerHTML = `
+    <div class="mobile-detail-header">
+      <img src="${b.imageUrl || DEFAULT_IMAGE}" alt="${b.name}" class="mobile-detail-img">
+      <button class="mobile-detail-close" id="mobileDetailClose" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="mobile-detail-body">
+      <h2>${b.name}</h2>
+      ${b.verified ? '<span class="verified-inline">✓ Verified</span>' : ''}
+      <p class="mobile-detail-address"><i class="fas fa-map-marker-alt"></i> ${b.address || ''}</p>
+      ${hoursHTML}
+      ${b.owner ? `<p><strong>Owner:</strong> ${b.owner}</p>` : ''}
+      ${b.phone ? `<p><i class="fas fa-phone"></i> <a href="tel:${b.phone}">${b.phone}</a></p>` : ''}
+      ${b.email ? `<p><i class="fas fa-envelope"></i> <a href="mailto:${b.email}">${b.email}</a></p>` : ''}
+      ${b.website ? `<p><i class="fas fa-globe"></i> <a href="${b.website}" target="_blank" rel="noopener noreferrer">Visit Website</a></p>` : ''}
+      ${b.category ? `<p><i class="fas fa-tag"></i> ${b.category}</p>` : ''}
+      ${b.description ? `<p class="mobile-detail-desc">${b.description}</p>` : ''}
+      ${parishHTML}
+      ${amenitiesHTML}
+      ${!isNaN(bLat) && !isNaN(bLng) ? `
+        <button class="directions-btn mobile-detail-directions" id="mobileDetailDirections">
+          📍 Get Directions
+        </button>
+      ` : ''}
+    </div>
+  `;
+
+  document.getElementById('sidebar').appendChild(panel);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    panel.classList.add('active');
+  });
+
+  // Close button
+  document.getElementById('mobileDetailClose').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeMobileDetail();
+  });
+
+  // Directions button
+  const dirBtn = document.getElementById('mobileDetailDirections');
+  if (dirBtn) {
+    dirBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      trackBusinessClick(b._id || b.id, b.name, 'directions_click');
+      openMapsApp(b.lat, b.lng, b.name);
+    });
+  }
+}
+
+function closeMobileDetail() {
+  const panel = document.getElementById('mobileDetailPanel');
+  if (panel) {
+    panel.classList.remove('active');
+    panel.addEventListener('transitionend', () => panel.remove(), { once: true });
+    // Fallback removal if transition fails
+    setTimeout(() => { if (panel.parentNode) panel.remove(); }, 400);
+  }
 }
 
 // ==========================================

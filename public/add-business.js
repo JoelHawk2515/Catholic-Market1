@@ -170,6 +170,7 @@ businessForm.addEventListener("submit", async (e) => {
         formData.append("email", document.getElementById("businessEmail").value.trim());
         formData.append("website", document.getElementById("businessWebsite").value.trim());
         formData.append("category", document.getElementById("businessCategory").value.trim());
+        formData.append("tags", document.getElementById("businessTags").value.trim());
         formData.append("description", document.getElementById("businessDescription").value.trim());
 
         // Parish
