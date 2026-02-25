@@ -53,8 +53,8 @@ const storage = multer.diskStorage({
     // Get file extension
     const ext = path.extname(file.originalname).toLowerCase();
 
-    // Create filename: businessname.ext
-    cb(null, `${sanitizedName}${ext}`);
+    // Create filename: businessname-timestamp.ext
+    cb(null, `${sanitizedName}-${Date.now()}${ext}`);
   }
 });
 
