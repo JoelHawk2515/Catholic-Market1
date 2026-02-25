@@ -29,11 +29,11 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     userLocationLat: {
-      type: DataTypes.DECIMAL(10, 8),
+      type: DataTypes.DECIMAL(13, 10),
       allowNull: true
     },
     userLocationLng: {
-      type: DataTypes.DECIMAL(11, 8),
+      type: DataTypes.DECIMAL(14, 10),
       allowNull: true
     },
     timestamp: {

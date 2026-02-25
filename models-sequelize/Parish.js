@@ -33,11 +33,11 @@ module.exports = (sequelize) => {
       allowNull: true
     },
     lat: {
-      type: DataTypes.DECIMAL(10, 8),
+      type: DataTypes.DECIMAL(13, 10),
       allowNull: true
     },
     lng: {
-      type: DataTypes.DECIMAL(11, 8),
+      type: DataTypes.DECIMAL(14, 10),
       allowNull: true
     },
     phone: {

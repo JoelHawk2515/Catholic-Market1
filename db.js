@@ -7,10 +7,10 @@ const connectDB = async () => {
     console.log('Attempting MySQL connection...');
     await sequelize.authenticate();
     console.log('✓ MySQL connected successfully');
-    
+
     // Sync database (creates tables if they don't exist)
     console.log('Syncing database tables...');
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ alter: true });
     console.log('✓ Database tables synced');
   } catch (error) {
     console.error('✗ MySQL connection error:', error.message);
