@@ -600,6 +600,13 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
       return res.status(404).json({ error: "Business not found" });
     }
 
+    const needsRegeocode = (
+      (address !== undefined && address !== business.address) ||
+      (city !== undefined && city !== business.city) ||
+      (state !== undefined && state !== business.state) ||
+      (zip !== undefined && zip !== business.zip)
+    );
+
     // Update fields
     if (name !== undefined) business.name = name;
     if (address !== undefined) business.address = address;
@@ -623,7 +630,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
     await business.save();
 
     // If address was updated, re-geocode
-    if (address !== undefined || city !== undefined || state !== undefined || zip !== undefined) {
+    if (needsRegeocode) {
       try {
         let fullAddress = business.address;
         if (business.city || business.state || business.zip) {
@@ -638,10 +645,11 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
         if (coords) {
           business.lat = coords.lat;
           business.lng = coords.lng;
-          business.street = coords.street || business.street;
-          business.city = coords.city || business.city;
-          business.state = coords.state || business.state;
-          business.zip = coords.zip || business.zip;
+          // Keep manual updates; fallback to geocoded values only if empty
+          business.street = business.street || coords.street;
+          business.city = business.city || coords.city;
+          business.state = business.state || coords.state;
+          business.zip = business.zip || coords.zip;
           await business.save();
           console.log(`Re-geocoded business "${business.name}": ${coords.displayName}`);
         }
