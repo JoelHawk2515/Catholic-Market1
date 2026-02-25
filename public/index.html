@@ -101,14 +101,28 @@
           const registration = await navigator.serviceWorker.register('/sw.js');
           console.log('SW registered:', registration.scope);
 
-          // Request notification permission
-          if ('Notification' in window && Notification.permission === 'default') {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
+          // Detect if running as installed PWA (standalone mode)
+          const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+
+          if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+              // Already granted — silently subscribe
               await subscribeToPush(registration);
+            } else if (Notification.permission === 'default' && isStandalone) {
+              // Only prompt once per install — track in localStorage
+              const hasPrompted = localStorage.getItem('cm_notification_prompted');
+              if (!hasPrompted) {
+                localStorage.setItem('cm_notification_prompted', '1');
+                // Small delay so the app loads first before the prompt appears
+                setTimeout(async () => {
+                  const permission = await Notification.requestPermission();
+                  if (permission === 'granted') {
+                    await subscribeToPush(registration);
+                  }
+                }, 1500);
+              }
             }
-          } else if (Notification.permission === 'granted') {
-            await subscribeToPush(registration);
           }
         } catch (err) {
           console.error('SW registration failed:', err);

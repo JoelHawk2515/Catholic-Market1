@@ -423,6 +423,8 @@ async function showMapForBounds(southWest, northEast, label) {
 
   const bounds = L.latLngBounds(southWest, northEast);
   map.fitBounds(bounds);
+  // Ensure Leaflet recalculates tiles for CSS aspect-ratio containers
+  setTimeout(() => map.invalidateSize(), 100);
 
   // Draw rectangle outline for area
   if (boundsRect) {
