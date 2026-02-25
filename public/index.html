@@ -37,15 +37,23 @@
   <!-- Top Navigation Bar (always visible) -->
   <nav id="top-nav">
     <div class="nav-left">
-      <img src="/img/logo.png" alt="Catholic Market" class="logo-small" />
+      <button id="mobileSearchOpenBtn" class="nav-btn mobile-only-btn" title="Search">
+        <i class="fas fa-search"></i>
+      </button>
+      <a href="/" class="nav-logo-link">
+        <img src="/img/logo.png" alt="Catholic Market" class="logo-small" />
+      </a>
     </div>
     <div class="nav-center">
       <form id="searchForm" class="nav-search-form">
         <div class="nav-search-wrapper">
-          <i class="fas fa-search nav-search-icon"></i>
+          <i class="fas fa-search nav-search-icon desktop-search-icon"></i>
           <input type="text" id="locationInput" placeholder="Search city, state, or zip..." autocomplete="off" />
         </div>
         <button type="submit" id="navSearchBtn">Search</button>
+        <button type="button" id="mobileSearchCloseBtn" class="nav-btn mobile-only-btn" title="Close Search">
+          <i class="fas fa-times"></i>
+        </button>
       </form>
     </div>
     <div class="nav-right">

@@ -23,6 +23,20 @@ const clearFiltersBtn = document.getElementById("clearFilters");
 const sponsoredPanel = document.getElementById("sponsoredPanel");
 const sponsoredGrid = document.getElementById("sponsoredGrid");
 
+// Mobile Search Elements
+const mobileSearchOpenBtn = document.getElementById("mobileSearchOpenBtn");
+const mobileSearchCloseBtn = document.getElementById("mobileSearchCloseBtn");
+
+if (mobileSearchOpenBtn && mobileSearchCloseBtn) {
+  mobileSearchOpenBtn.addEventListener("click", () => {
+    topNav.classList.add("mobile-search-active");
+    locationInput.focus();
+  });
+  mobileSearchCloseBtn.addEventListener("click", () => {
+    topNav.classList.remove("mobile-search-active");
+  });
+}
+
 // Default image if business has none
 const DEFAULT_IMAGE = "/img/default-business.png";
 
@@ -281,6 +295,7 @@ searchForm.addEventListener("submit", async (e) => {
       [north, east],
       best.display_name || query
     );
+    topNav.classList.remove("mobile-search-active");
   } catch (err) {
     console.error(err);
     alert("Error searching location.");
