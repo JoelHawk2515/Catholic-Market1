@@ -824,13 +824,14 @@ async function trackBusinessClick(businessId, businessName, eventType, tag = nul
 
 function openMapsApp(lat, lng, name) {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const queryName = encodeURIComponent(name);
 
   if (isMobile) {
-    window.location.href = `maps://?q=${lat},${lng}`;
+    window.location.href = `maps://?q=${queryName}`;
     setTimeout(() => {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+      window.open(`https://www.google.com/maps/search/?api=1&query=${queryName}`, '_blank');
     }, 500);
   } else {
-    window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+    window.open(`https://www.google.com/maps/search/?api=1&query=${queryName}`, '_blank');
   }
 }
