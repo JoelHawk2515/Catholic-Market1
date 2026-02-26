@@ -560,7 +560,7 @@ app.delete("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await Business.findByIdAndDelete(id);
+    const result = await Business.destroy({ where: { id } });
 
     if (!result) {
       return res.status(404).json({ error: "Business not found" });
@@ -587,9 +587,12 @@ app.get("/api/businesses", async (req, res) => {
       });
     }
 
-    const businesses = await Business.find({
-      lat: { [Op.gte]: minLat, $lte: maxLat },
-      lng: { [Op.gte]: minLng, $lte: maxLng }
+    const businesses = await Business.findAll({
+      where: {
+        lat: { [Op.between]: [minLat, maxLat] },
+        lng: { [Op.between]: [minLng, maxLng] }
+      },
+      raw: true
     });
 
     // Format for frontend
@@ -620,9 +623,12 @@ app.get("/api/parishes", async (req, res) => {
       });
     }
 
-    const parishes = await Parish.find({
-      lat: { [Op.gte]: minLat, $lte: maxLat },
-      lng: { [Op.gte]: minLng, $lte: maxLng }
+    const parishes = await Parish.findAll({
+      where: {
+        lat: { [Op.between]: [minLat, maxLat] },
+        lng: { [Op.between]: [minLng, maxLng] }
+      },
+      raw: true
     });
 
     // Format for frontend
@@ -723,7 +729,7 @@ app.delete("/api/admin/parishes/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await Parish.findByIdAndDelete(id);
+    const result = await Parish.destroy({ where: { id } });
 
     if (!result) {
       return res.status(404).json({ error: "Parish not found" });
@@ -743,13 +749,13 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
     let parishesUpdated = 0;
 
     // Geocode businesses without coordinates
-    const businessesNeedingGeocode = await Business.find({
-      $or: [
-        { lat: null },
-        { lng: null },
-        { lat: { [Op.eq]: null } },
-        { lng: { [Op.eq]: null } }
-      ]
+    const businessesNeedingGeocode = await Business.findAll({
+      where: {
+        [Op.or]: [
+          { lat: null },
+          { lng: null }
+        ]
+      }
     });
 
     for (const business of businessesNeedingGeocode) {
@@ -784,13 +790,13 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
     }
 
     // Geocode parishes without coordinates
-    const parishesNeedingGeocode = await Parish.find({
-      $or: [
-        { lat: null },
-        { lng: null },
-        { lat: { [Op.eq]: null } },
-        { lng: { [Op.eq]: null } }
-      ]
+    const parishesNeedingGeocode = await Parish.findAll({
+      where: {
+        [Op.or]: [
+          { lat: null },
+          { lng: null }
+        ]
+      }
     });
 
     for (const parish of parishesNeedingGeocode) {
@@ -946,8 +952,11 @@ app.get("/api/parishes/city/:cityName", async (req, res) => {
   try {
     const cityName = req.params.cityName;
 
-    const parishes = await Parish.find({
-      city: new RegExp(`^${cityName}$`, 'i') // Case-insensitive match
+    const parishes = await Parish.findAll({
+      where: {
+        city: cityName
+      },
+      raw: true
     });
 
     // Format for frontend
@@ -966,9 +975,12 @@ app.get("/api/parishes/city/:cityName", async (req, res) => {
 // API: fetch sponsored businesses for homepage rotator
 app.get("/api/businesses/sponsored", async (req, res) => {
   try {
-    const sponsored = await Business.find({
-      sponsored: true,
-      verified: true // Only show verified sponsored businesses
+    const sponsored = await Business.findAll({
+      where: {
+        sponsored: true,
+        verified: true // Only show verified sponsored businesses
+      },
+      raw: true
     });
 
     const formatted = sponsored.map(biz => ({
