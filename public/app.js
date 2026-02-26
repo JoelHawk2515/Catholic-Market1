@@ -599,9 +599,9 @@ function renderParishes(parishes) {
 
   const churchIcon = L.icon({
     iconUrl: '/img/church-icon.webp',
-    iconSize: [38, 95],
-    iconAnchor: [22, 94],
-    popupAnchor: [-3, -76]
+    iconSize: [38, 38],
+    iconAnchor: [19, 38],
+    popupAnchor: [0, -38]
   });
 
   parishes.forEach((p) => {
