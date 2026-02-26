@@ -87,44 +87,29 @@ function handleImageFile(file) {
 }
 
 // ==========================================
-// PARISH LOOKUP (on city input)
+// PARISH LOADING (on page load)
 // ==========================================
 
-businessCityInput.addEventListener("input", debounce(async (e) => {
-    const city = e.target.value.trim();
-    if (city.length < 3) {
-        businessParishSelect.innerHTML = '<option value="">-- Select a Parish --</option>';
-        return;
-    }
-
+async function loadParishes() {
     try {
-        const res = await fetch(`/api/parishes/city/${encodeURIComponent(city)}`);
+        const res = await fetch('/api/parishes/all');
         if (res.ok) {
             const parishes = await res.json();
             businessParishSelect.innerHTML = '<option value="">-- Select a Parish --</option>';
             parishes.forEach(p => {
                 const option = document.createElement("option");
                 option.value = p.id;
-                option.textContent = p.name;
+                option.textContent = `${p.name}${p.city ? ' (' + p.city + ')' : ''}`;
                 businessParishSelect.appendChild(option);
             });
         }
     } catch (err) {
         console.error("Error fetching parishes:", err);
     }
-}, 500));
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
 }
+
+// Load parishes when page loads
+loadParishes();
 
 // ==========================================
 // FORM SUBMISSION
