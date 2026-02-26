@@ -1022,44 +1022,24 @@ app.post("/api/admin/geocode-all", requireAdmin, async (req, res) => {
   }
 });
 
-// Helper function to geocode an address using multiple services for better accuracy
+// Helper function to geocode an address using Geoapify
 async function geocodeAddress(address) {
-  // Try Photon first (more accurate than Nominatim)
   try {
-    const photonResult = await geocodeWithPhoton(address);
-    if (photonResult) {
-      console.log(`Photon geocoded: ${address} -> ${photonResult.displayName}`);
-      return photonResult;
+    const apiKey = process.env.GEOAPIFY_API_KEY;
+    if (!apiKey) {
+      console.warn('GEOAPIFY_API_KEY is not set. Skipping geocoding.');
+      return null;
     }
-  } catch (err) {
-    console.error('Photon geocoding failed:', err.message);
-  }
 
-  // Fallback to Nominatim
-  try {
-    const nominatimResult = await geocodeWithNominatim(address);
-    if (nominatimResult) {
-      console.log(`Nominatim geocoded: ${address} -> ${nominatimResult.displayName}`);
-      return nominatimResult;
-    }
-  } catch (err) {
-    console.error('Nominatim geocoding failed:', err.message);
-  }
-
-  return null;
-}
-
-// Geocode using Photon (Komoot's geocoding service - more accurate)
-async function geocodeWithPhoton(address) {
-  try {
-    const url = new URL("https://photon.komoot.io/api/");
-    url.searchParams.append("q", address);
+    const url = new URL("https://api.geoapify.com/v1/geocode/search");
+    url.searchParams.append("text", address);
+    url.searchParams.append("apiKey", apiKey);
     url.searchParams.append("limit", "1");
 
     const response = await fetch(url.toString());
 
     if (!response.ok) {
-      throw new Error(`Photon geocoding failed: ${response.status}`);
+      throw new Error(`Geoapify geocoding failed: ${response.status}`);
     }
 
     const data = await response.json();
@@ -1069,62 +1049,24 @@ async function geocodeWithPhoton(address) {
       const props = feature.properties || {};
       const coords = feature.geometry.coordinates; // [lng, lat] format
 
-      return {
+      const result = {
         lat: coords[1],
         lng: coords[0],
-        street: props.street || props.name || null,
+        street: props.street || null,
         city: props.city || null,
-        state: props.state || null,
+        state: props.state_code || props.state || null,
         zip: props.postcode || null,
-        displayName: props.name ? `${props.name}, ${props.city || ''}, ${props.state || ''}` : address
+        displayName: props.formatted || address
       };
+
+      console.log(`Geoapify geocoded: ${address} -> ${result.displayName}`);
+      return result;
     }
 
     return null;
-  } catch (error) {
-    throw error;
-  }
-}
-
-// Geocode using Nominatim as fallback
-async function geocodeWithNominatim(address) {
-  try {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.append("q", address);
-    url.searchParams.append("format", "json");
-    url.searchParams.append("addressdetails", "1");
-    url.searchParams.append("limit", "1");
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'User-Agent': 'CatholicMarket/1.0'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Nominatim geocoding failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    if (data && data.length > 0) {
-      const result = data[0];
-      const addr = result.address || {};
-
-      return {
-        lat: parseFloat(result.lat),
-        lng: parseFloat(result.lon),
-        street: addr.road || addr.street || null,
-        city: addr.city || addr.town || addr.village || addr.municipality || null,
-        state: addr.state || null,
-        zip: addr.postcode || null,
-        displayName: result.display_name
-      };
-    }
-
+  } catch (err) {
+    console.error('Geoapify geocoding failed:', err.message);
     return null;
-  } catch (error) {
-    throw error;
   }
 }
 
