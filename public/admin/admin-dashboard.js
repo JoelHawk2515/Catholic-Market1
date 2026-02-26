@@ -316,132 +316,141 @@ async function editBusiness(id) {
 
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
-        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+        <button class="close-modal" aria-label="Close modal" onclick="this.closest('.modal').remove()"><i class="fas fa-times"></i></button>
         <h2>Edit Business</h2>
-        <form id="editBusinessForm" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Name *</label>
-            <input type="text" name="name" value="${business.name || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+        <p class="subtitle">Update the details for ${business.name}</p>
+        <form id="editBusinessForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Business Name *</label>
+            <input type="text" name="name" value="${business.name || ''}" required>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Address *</label>
-            <input type="text" name="address" value="${business.address || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" name="address" value="${business.address || ''}" required>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Street</label>
-            <input type="text" name="street" value="${business.street || ''}" placeholder="e.g., 123 Main St" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Street</label>
+              <input type="text" name="street" value="${business.street || ''}" placeholder="e.g., 123 Main St">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>City</label>
+              <input type="text" name="city" value="${business.city || ''}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>State</label>
+              <input type="text" name="state" value="${business.state || ''}" placeholder="e.g., KS">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>ZIP Code</label>
+              <input type="text" name="zip" value="${business.zip || ''}" placeholder="e.g., 67202">
+            </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">City</label>
-            <input type="text" name="city" value="${business.city || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Latitude</label>
+              <input type="number" step="any" name="lat" value="${business.lat || ''}" placeholder="e.g., 37.6922" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Longitude</label>
+              <input type="number" step="any" name="lng" value="${business.lng || ''}" placeholder="e.g., -97.3375" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem;">
+            </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">State</label>
-            <input type="text" name="state" value="${business.state || ''}" placeholder="e.g., KS" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">ZIP Code</label>
-            <input type="text" name="zip" value="${business.zip || ''}" placeholder="e.g., 67202" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Latitude</label>
-            <input type="number" step="any" name="lat" value="${business.lat || ''}" placeholder="e.g., 37.6922" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Longitude</label>
-            <input type="number" step="any" name="lng" value="${business.lng || ''}" placeholder="e.g., -97.3375" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <button type="button" id="editAutoFillCoordsBtn" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <div class="form-group">
+            <button type="button" class="btn-action" id="editAutoFillCoordsBtn" style="width: 100%; justify-content: center;">
               <i class="fas fa-map-marker-alt"></i> Auto-fill Coordinates from Address
             </button>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Owner</label>
-            <input type="text" name="owner" value="${business.owner || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div class="form-group">
+            <label>Owner</label>
+            <input type="text" name="owner" value="${business.owner || ''}">
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Phone</label>
-            <input type="tel" name="phone" value="${business.phone || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Phone</label>
+              <input type="tel" name="phone" value="${business.phone || ''}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Email</label>
+              <input type="email" name="email" value="${business.email || ''}">
+            </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Email</label>
-            <input type="email" name="email" value="${business.email || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div class="form-group">
+            <label>Website</label>
+            <input type="url" name="website" value="${business.website || ''}">
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Website</label>
-            <input type="url" name="website" value="${business.website || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Category</label>
+              <input type="text" name="category" value="${business.category || ''}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Tags <span style="font-size: 0.8rem; color: var(--text-muted);">(comma-separated)</span></label>
+              <input type="text" name="tags" value="${business.tags || ''}" placeholder="e.g., cafe, bakery, family">
+            </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Category</label>
-            <input type="text" name="category" value="${business.category || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="4" style="resize: vertical;">${business.description || ''}</textarea>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Tags <span style="font-size: 0.8rem; color: #6b7380;">(comma-separated, e.g. cafe, bakery, restaurant)</span></label>
-            <input type="text" name="tags" value="${business.tags || ''}" placeholder="e.g., cafe, bakery, family" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Description</label>
-            <textarea name="description" rows="4" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem; resize: vertical;">${business.description || ''}</textarea>
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Amenities</label>
-            <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-                <input type="checkbox" name="isOpen247" ${business.isOpen247 ? 'checked' : ''} style="width: 18px; height: 18px;">
-                <i class="fas fa-clock"></i> <span>Open 24/7</span>
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="isOpen247" ${business.isOpen247 ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-clock" style="color: var(--accent-primary);"></i> <span>Open 24/7</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-                <input type="checkbox" name="hasWifi" ${business.hasWifi ? 'checked' : ''} style="width: 18px; height: 18px;">
-                <i class="fas fa-wifi"></i> <span>Free WiFi</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="hasWifi" ${business.hasWifi ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-wifi" style="color: var(--accent-primary);"></i> <span>Free WiFi</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-                <input type="checkbox" name="familyFriendly" ${business.familyFriendly ? 'checked' : ''} style="width: 18px; height: 18px;">
-                <i class="fas fa-users"></i> <span>Family Friendly</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="familyFriendly" ${business.familyFriendly ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-users" style="color: var(--accent-primary);"></i> <span>Family Friendly</span>
               </label>
-              <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-                <input type="checkbox" name="hasParking" ${business.hasParking ? 'checked' : ''} style="width: 18px; height: 18px;">
-                <i class="fas fa-square-parking"></i> <span>Parking Available</span>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="hasParking" ${business.hasParking ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-square-parking" style="color: var(--accent-primary);"></i> <span>Parking Available</span>
               </label>
             </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Hours</label>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Business Hours</label>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--bg-base); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
               ${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(day => `
                 <div style="display: grid; grid-template-columns: 100px 1fr auto 1fr; align-items: center; gap: 0.5rem;">
-                  <label style="color: #a7b0ce; font-size: 0.9rem; text-transform: capitalize;">${day}</label>
-                  <input type="time" name="${day}Open" value="${business.schedule?.[day]?.open || ''}" style="padding: 0.5rem; background: #11131a; border: 1px solid #252938; border-radius: 6px; color: #e8ecf5;">
-                  <span style="color: #6b7380; font-size: 0.85rem;">to</span>
-                  <input type="time" name="${day}Close" value="${business.schedule?.[day]?.close || ''}" style="padding: 0.5rem; background: #11131a; border: 1px solid #252938; border-radius: 6px; color: #e8ecf5;">
+                  <label style="color: var(--text-secondary); font-size: 0.9rem; text-transform: capitalize; margin: 0;">${day}</label>
+                  <input type="time" name="${day}Open" value="${business.schedule?.[day]?.open || ''}" style="padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-primary);">
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
+                  <input type="time" name="${day}Close" value="${business.schedule?.[day]?.close || ''}" style="padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-primary);">
                 </div>
               `).join('')}
             </div>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Image</label>
+          <div class="form-group">
+            <label>Business Image</label>
             <div class="image-upload-area" id="editImageUploadArea" style="min-height: 120px;">
               <input type="file" id="editBusinessImage" accept="image/*" style="display: none;" />
               <div class="upload-placeholder" id="editUploadPlaceholder" style="display: none; min-height: 120px;">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
                   <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -449,17 +458,17 @@ async function editBusiness(id) {
                 <p>Click to change image</p>
               </div>
               <div class="image-preview" id="editImagePreview" style="display: block;">
-                <img id="editPreviewImg" src="${currentImageUrl}" alt="Preview" />
+                <img id="editPreviewImg" src="${currentImageUrl}" alt="Preview" style="border-radius: var(--radius-sm);" />
                 <button type="button" class="remove-image-btn" id="editRemoveImageBtn" style="display: none;">✕</button>
                 <p class="image-name" id="editImageName"></p>
-                <button type="button" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #4b7cff; color: white; border: none; border-radius: 6px; cursor: pointer;" onclick="document.getElementById('editBusinessImage').click()">Change Image</button>
+                <button type="button" class="btn-action" style="margin-top: 0.5rem;" onclick="document.getElementById('editBusinessImage').click()">Change Image</button>
               </div>
             </div>
           </div>
           
-          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="submit" class="btn-approve" style="flex: 1;">Save Changes</button>
-            <button type="button" class="btn-reject" onclick="this.closest('.modal').remove()" style="flex: 1;">Cancel</button>
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1; justify-content: center;">Cancel</button>
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Save Changes</button>
           </div>
         </form>
       </div>
@@ -785,63 +794,68 @@ async function editParish(id) {
 
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
-        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+        <button class="close-modal" aria-label="Close modal" onclick="this.closest('.modal').remove()"><i class="fas fa-times"></i></button>
         <h2>Edit Parish</h2>
-        <form id="editParishForm" style="display: flex; flex-direction: column; gap: 1rem;">
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Parish Name *</label>
-            <input type="text" name="name" value="${parish.name || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+        <p class="subtitle">Update the details for ${parish.name}</p>
+        <form id="editParishForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Parish Name *</label>
+            <input type="text" name="name" value="${parish.name || ''}" required>
           </div>
           
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Address *</label>
-            <input type="text" name="address" value="${parish.address || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Street</label>
-            <input type="text" name="street" value="${parish.street || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">City *</label>
-              <input type="text" name="city" value="${parish.city || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">State *</label>
-              <input type="text" name="state" value="${parish.state || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-            </div>
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">ZIP</label>
-              <input type="text" name="zip" value="${parish.zip || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-            </div>
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Phone</label>
-            <input type="tel" name="phone" value="${parish.phone || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-          </div>
-          
-          <div>
-            <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Website</label>
-            <input type="url" name="website" value="${parish.website || ''}" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" name="address" value="${parish.address || ''}" required>
           </div>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Latitude *</label>
-              <input type="number" step="any" name="lat" value="${parish.lat || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Street</label>
+              <input type="text" name="street" value="${parish.street || ''}">
             </div>
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Longitude *</label>
-              <input type="number" step="any" name="lng" value="${parish.lng || ''}" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>City *</label>
+              <input type="text" name="city" value="${parish.city || ''}" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>State *</label>
+              <input type="text" name="state" value="${parish.state || ''}" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>ZIP</label>
+              <input type="text" name="zip" value="${parish.zip || ''}">
             </div>
           </div>
           
-          <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button type="submit" class="btn-approve" style="flex: 1;">Save Changes</button>
-            <button type="button" class="btn-reject" onclick="this.closest('.modal').remove()" style="flex: 1;">Cancel</button>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Phone</label>
+              <input type="tel" name="phone" value="${parish.phone || ''}">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Website</label>
+              <input type="url" name="website" value="${parish.website || ''}">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Latitude *</label>
+              <input type="number" step="any" name="lat" value="${parish.lat || ''}" required style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Longitude *</label>
+              <input type="number" step="any" name="lng" value="${parish.lng || ''}" required style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem;">
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1; justify-content: center;">Cancel</button>
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Save Changes</button>
           </div>
         </form>
       </div>
@@ -925,145 +939,153 @@ function showAddBusinessModal() {
   modal.style.display = 'flex';
 
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 700px;">
-      <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="close-modal" aria-label="Close modal" onclick="this.closest('.modal').remove()"><i class="fas fa-times"></i></button>
       <h2>Add New Business</h2>
-      <form id="addBusinessForm" style="display: flex; flex-direction: column; gap: 1rem;">
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Name *</label>
-          <input type="text" name="name" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Address *</label>
-          <input type="text" name="address" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Street</label>
-          <input type="text" name="street" placeholder="e.g., 123 Main St" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">City</label>
-          <input type="text" name="city" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">State</label>
-          <input type="text" name="state" placeholder="e.g., KS" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">ZIP Code</label>
-          <input type="text" name="zip" placeholder="e.g., 67202" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Owner</label>
-          <input type="text" name="owner" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Phone</label>
-          <input type="tel" name="phone" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Email</label>
-          <input type="email" name="email" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Website</label>
-          <input type="url" name="website" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Category</label>
-          <input type="text" name="category" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Tags <span style="font-size: 0.8rem; color: #6b7380;">(comma-separated, e.g. cafe, bakery, restaurant)</span></label>
-          <input type="text" name="tags" placeholder="e.g., cafe, bakery, family" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Description</label>
-          <textarea name="description" rows="4" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem; resize: vertical;"></textarea>
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Image</label>
-          <div class="image-upload-area" id="addBusinessImageUploadArea">
-            <input type="file" id="addBusinessImageInput" accept="image/*" style="display: none;" />
-            <div class="upload-placeholder" id="addBusinessUploadPlaceholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <p>Click or drag image here</p>
+        <p class="subtitle">Fill out the details to add a new business to the system</p>
+        <form id="addBusinessForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Business Name *</label>
+            <input type="text" name="name" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" name="address" required>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Street</label>
+              <input type="text" name="street" placeholder="e.g., 123 Main St">
             </div>
-            <div class="image-preview" id="addBusinessImagePreview" style="display: none;">
-              <img id="addBusinessPreviewImg" alt="Preview" />
-              <button type="button" class="remove-image-btn" id="addBusinessRemoveImageBtn">✕</button>
-              <p class="image-name" id="addBusinessImageName"></p>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>City</label>
+              <input type="text" name="city">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>State</label>
+              <input type="text" name="state" placeholder="e.g., KS">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>ZIP Code</label>
+              <input type="text" name="zip" placeholder="e.g., 67202">
             </div>
           </div>
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Amenities</label>
-          <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-              <input type="checkbox" name="isOpen247" style="width: 18px; height: 18px;">
-              <i class="fas fa-clock"></i> <span>Open 24/7</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-              <input type="checkbox" name="hasWifi" style="width: 18px; height: 18px;">
-              <i class="fas fa-wifi"></i> <span>Free WiFi</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-              <input type="checkbox" name="familyFriendly" style="width: 18px; height: 18px;">
-              <i class="fas fa-users"></i> <span>Family Friendly</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-              <input type="checkbox" name="hasParking" style="width: 18px; height: 18px;">
-              <i class="fas fa-square-parking"></i> <span>Parking Available</span>
-            </label>
+          
+          <div class="form-group">
+            <label>Owner</label>
+            <input type="text" name="owner">
           </div>
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Business Hours</label>
-          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            ${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(day => `
-              <div style="display: grid; grid-template-columns: 100px 1fr auto 1fr; align-items: center; gap: 0.5rem;">
-                <label style="color: #a7b0ce; font-size: 0.9rem; text-transform: capitalize;">${day}</label>
-                <input type="time" name="${day}Open" style="padding: 0.5rem; background: #11131a; border: 1px solid #252938; border-radius: 6px; color: #e8ecf5;">
-                <span style="color: #6b7380; font-size: 0.85rem;">to</span>
-                <input type="time" name="${day}Close" style="padding: 0.5rem; background: #11131a; border: 1px solid #252938; border-radius: 6px; color: #e8ecf5;">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Phone</label>
+              <input type="tel" name="phone">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Email</label>
+              <input type="email" name="email">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Website</label>
+            <input type="url" name="website">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Category</label>
+              <input type="text" name="category">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Tags <span style="font-size: 0.8rem; color: var(--text-muted);">(comma-separated)</span></label>
+              <input type="text" name="tags" placeholder="e.g., cafe, bakery, family">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" rows="4" style="resize: vertical;"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Business Image</label>
+            <div class="image-upload-area" id="addBusinessImageUploadArea" style="min-height: 120px;">
+              <input type="file" id="addBusinessImageInput" accept="image/*" style="display: none;" />
+              <div class="upload-placeholder" id="addBusinessUploadPlaceholder">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-primary);">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p>Click or drag image here</p>
               </div>
-            `).join('')}
+              <div class="image-preview" id="addBusinessImagePreview" style="display: none;">
+                <img id="addBusinessPreviewImg" alt="Preview" style="border-radius: var(--radius-sm);" />
+                <button type="button" class="remove-image-btn" id="addBusinessRemoveImageBtn">✕</button>
+                <p class="image-name" id="addBusinessImageName"></p>
+                <button type="button" class="btn-action" style="margin-top: 0.5rem;" onclick="document.getElementById('addBusinessImageInput').click()">Change Image</button>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div>
-          <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
-            <input type="checkbox" name="verified" checked style="width: 18px; height: 18px;">
-            <span>Mark as Verified (will appear immediately on map)</span>
-          </label>
-        </div>
-        
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button type="submit" class="btn-approve" style="flex: 1;">Add Business</button>
-          <button type="button" class="btn-reject" onclick="this.closest('.modal').remove()" style="flex: 1;">Cancel</button>
-        </div>
-      </form>
-    </div>
-  `;
+          
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0.5rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="isOpen247" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-clock" style="color: var(--accent-primary);"></i> <span>Open 24/7</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="hasWifi" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-wifi" style="color: var(--accent-primary);"></i> <span>Free WiFi</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="familyFriendly" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-users" style="color: var(--accent-primary);"></i> <span>Family Friendly</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+                <input type="checkbox" name="hasParking" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                <i class="fas fa-square-parking" style="color: var(--accent-primary);"></i> <span>Parking Available</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Business Hours</label>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--bg-base); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              ${['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(day => `
+                <div style="display: grid; grid-template-columns: 100px 1fr auto 1fr; align-items: center; gap: 0.5rem;">
+                  <label style="color: var(--text-secondary); font-size: 0.9rem; text-transform: capitalize; margin: 0;">${day}</label>
+                  <input type="time" name="${day}Open" style="padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-primary);">
+                  <span style="color: var(--text-muted); font-size: 0.85rem;">to</span>
+                  <input type="time" name="${day}Close" style="padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-surface); color: var(--text-primary);">
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer; font-size: var(--fs-sm);">
+              <input type="checkbox" name="verified" checked style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+              <span>Mark as Verified (will appear immediately on map)</span>
+            </label>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1; justify-content: center;">Cancel</button>
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Add Business</button>
+          </div>
+        </form>
+      </div>
+    `;
 
   document.body.appendChild(modal);
 
@@ -1188,57 +1210,60 @@ function showAddParishModal() {
   modal.style.display = 'flex';
 
   modal.innerHTML = `
-    <div class="modal-content" style="max-width: 700px;">
-      <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
-      <h2>Add New Parish</h2>
-      <form id="addParishForm" style="display: flex; flex-direction: column; gap: 1rem;">
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Parish Name *</label>
-          <input type="text" name="name" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Address *</label>
-          <input type="text" name="address" required style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Street</label>
-          <input type="text" name="street" placeholder="e.g., 123 Main St" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">City</label>
-          <input type="text" name="city" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">State</label>
-          <input type="text" name="state" placeholder="e.g., KS" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">ZIP Code</label>
-          <input type="text" name="zip" placeholder="e.g., 67202" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Website</label>
-          <input type="url" name="website" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem;">
-        </div>
-        
-        <div>
-          <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Mass Times</label>
-          <textarea name="massTimes" rows="3" style="width: 100%; padding: 0.75rem; background: #11131a; border: 1px solid #252938; border-radius: 8px; color: #e8ecf5; font-size: 1rem; resize: vertical;"></textarea>
-        </div>
-        
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-          <button type="submit" class="btn-approve" style="flex: 1;">Add Parish</button>
-          <button type="button" class="btn-reject" onclick="this.closest('.modal').remove()" style="flex: 1;">Cancel</button>
-        </div>
-      </form>
-    </div>
-  `;
+      <div class="modal-content" style="max-width: 600px;">
+        <button class="close-modal" aria-label="Close modal" onclick="this.closest('.modal').remove()"><i class="fas fa-times"></i></button>
+        <h2>Add New Parish</h2>
+        <p class="subtitle">Enter the details for the new parish</p>
+        <form id="addParishForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Parish Name *</label>
+            <input type="text" name="name" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" name="address" required>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Street</label>
+              <input type="text" name="street" placeholder="e.g., 123 Main St">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>City</label>
+              <input type="text" name="city">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>State</label>
+              <input type="text" name="state" placeholder="e.g., KS">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>ZIP Code</label>
+              <input type="text" name="zip" placeholder="e.g., 67202">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Website</label>
+            <input type="url" name="website">
+          </div>
+          
+          <div class="form-group">
+            <label>Mass Times</label>
+            <textarea name="massTimes" rows="3" style="resize: vertical;"></textarea>
+          </div>
+          
+          <div style="display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+            <button type="button" class="btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1; justify-content: center;">Cancel</button>
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Add Parish</button>
+          </div>
+        </form>
+      </div>
+    `;
 
   document.body.appendChild(modal);
 
@@ -1424,13 +1449,13 @@ async function loadSpotlightQueue() {
           </div>
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
-          <div style="text-align: right; margin-right: 1rem;">
-            <p style="margin: 0; font-size: 0.75rem; color: #8b45ff; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Scheduled For</p>
-            <p style="margin: 0; color: #f5f7ff; font-size: 0.9rem;">${dateString}</p>
-          </div>
-          <button onclick="removeSpotlightQueueItem('${item.id}')" style="background: #e11d48; color: white; border: none; padding: 0.5rem; border-radius: 6px; cursor: pointer;"><i class="fas fa-trash"></i></button>
-        </div>
-      `;
+      <div style="text-align: right; margin-right: 1rem;">
+        <p style="margin: 0; font-size: 0.75rem; color: #8b45ff; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Scheduled For</p>
+        <p style="margin: 0; color: #f5f7ff; font-size: 0.9rem;">${dateString}</p>
+      </div>
+      <button onclick="removeSpotlightQueueItem('${item.id}')" style="background: #e11d48; color: white; border: none; padding: 0.5rem; border-radius: 6px; cursor: pointer;"><i class="fas fa-trash"></i></button>
+    </div>
+  `;
       listContainer.appendChild(row);
     });
 
