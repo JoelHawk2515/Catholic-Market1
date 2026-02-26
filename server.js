@@ -796,6 +796,25 @@ app.get("/api/parishes", async (req, res) => {
   }
 });
 
+// API: fetch all parishes (public, for form dropdowns)
+app.get("/api/parishes/all", async (req, res) => {
+  try {
+    const parishes = await Parish.findAll({
+      order: [["name", "ASC"]]
+    });
+
+    const formatted = parishes.map(parish => ({
+      ...parish.toJSON(),
+      id: parish.id.toString()
+    }));
+
+    res.json(formatted);
+  } catch (error) {
+    console.error('Error fetching all parishes:', error);
+    res.status(500).json({ error: "Failed to fetch parishes" });
+  }
+});
+
 // Public: Get parishes by city name (for Add Business form parish lookup)
 app.get("/api/parishes/city/:city", async (req, res) => {
   try {
