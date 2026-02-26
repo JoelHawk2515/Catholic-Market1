@@ -598,10 +598,10 @@ function renderParishes(parishes) {
   if (!parishes || parishes.length === 0) return;
 
   const churchIcon = L.icon({
-    iconUrl: churchIconUrl,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconUrl: '/img/church-icon.webp',
+    iconSize: [38, 95],
+    iconAnchor: [22, 94],
+    popupAnchor: [-3, -76]
   });
 
   parishes.forEach((p) => {
