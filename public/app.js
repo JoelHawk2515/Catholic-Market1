@@ -15,11 +15,8 @@ const locationInput = document.getElementById("locationInput");
 const myLocationBtn = document.getElementById("myLocationBtn");
 const businessListEl = document.getElementById("businessList");
 const topNav = document.getElementById("top-nav");
-const filterToggle = document.getElementById("filterToggle");
-const filterDropdown = document.getElementById("filterDropdown");
-const filterArrow = document.getElementById("filterArrow");
-const tagsList = document.getElementById("tagsList");
-const clearFiltersBtn = document.getElementById("clearFilters");
+const localSearchInput = document.getElementById("localSearchInput");
+const clearLocalSearch = document.getElementById("clearLocalSearch");
 const sponsoredPanel = document.getElementById("sponsoredPanel");
 const sponsoredGrid = document.getElementById("sponsoredGrid");
 
@@ -43,8 +40,7 @@ const DEFAULT_IMAGE = "/img/default-business.png";
 // Store current businesses and filters
 let currentBusinesses = [];
 let currentParishes = [];
-let selectedTags = new Set();
-let allAvailableTags = new Set();
+let currentLocalSearchQuery = "";
 let parishesData = {}; // Store parish data by ID
 
 // Church icon for parishes (using SVG data URL for custom marker)
@@ -190,19 +186,31 @@ async function loadSponsoredBusinesses() {
 }
 
 // ==========================================
-// FILTER HANDLING
+// LOCAL SEARCH HANDLING
 // ==========================================
 
-filterToggle.addEventListener("click", () => {
-  filterDropdown.classList.toggle("hidden");
-  filterToggle.classList.toggle("active");
-});
+if (localSearchInput) {
+  localSearchInput.addEventListener("input", (e) => {
+    currentLocalSearchQuery = e.target.value.toLowerCase().trim();
+    if (currentLocalSearchQuery.length > 0) {
+      clearLocalSearch.classList.remove("hidden");
+    } else {
+      clearLocalSearch.classList.add("hidden");
+    }
+    filterBusinesses();
+  });
+}
 
-clearFiltersBtn.addEventListener("click", () => {
-  selectedTags.clear();
-  updateTagButtons();
-  filterBusinesses();
-});
+if (clearLocalSearch) {
+  clearLocalSearch.addEventListener("click", () => {
+    if (localSearchInput) {
+      localSearchInput.value = "";
+    }
+    currentLocalSearchQuery = "";
+    clearLocalSearch.classList.add("hidden");
+    filterBusinesses();
+  });
+}
 
 // ==========================================
 // BUSINESS HOURS HELPERS
@@ -489,8 +497,9 @@ async function showMapForBounds(southWest, northEast, label) {
       parishesData[p.id] = p;
     });
 
-    selectedTags.clear();
-    populateTagFilters(businesses);
+    currentLocalSearchQuery = "";
+    if (localSearchInput) localSearchInput.value = "";
+    if (clearLocalSearch) clearLocalSearch.classList.add("hidden");
 
     markersLayer.clearLayers();
 
@@ -511,95 +520,62 @@ function searchByCoords(lat, lng) {
 }
 
 // ==========================================
-// TAG FILTERS
+// LOCAL SEARCH FILTERS
 // ==========================================
 
-function populateTagFilters(businesses) {
-  allAvailableTags.clear();
-
-  businesses.forEach(b => {
-    if (b.tags) {
-      const tags = b.tags.split(',').map(t => t.trim().toLowerCase());
-      tags.forEach(tag => allAvailableTags.add(tag));
-    }
-  });
-
-  updateTagButtons();
-}
-
-function updateTagButtons() {
-  tagsList.innerHTML = "";
-
-  const sortedTags = Array.from(allAvailableTags).sort();
-
-  sortedTags.forEach(tag => {
-    const tagBtn = document.createElement("button");
-    tagBtn.className = "tag-filter";
-    tagBtn.textContent = tag;
-
-    if (selectedTags.has(tag)) {
-      tagBtn.classList.add("active");
-    }
-
-    tagBtn.addEventListener("click", () => {
-      if (selectedTags.has(tag)) {
-        selectedTags.delete(tag);
-      } else {
-        selectedTags.add(tag);
-        currentBusinesses.forEach(b => {
-          if (b.tags && b.tags.includes(tag)) {
-            trackBusinessClick(b._id || b.id, b.name, 'tag_click', tag);
-          }
-        });
-      }
-      updateTagButtons();
-      filterBusinesses();
-    });
-
-    tagsList.appendChild(tagBtn);
-  });
-}
-
 function filterBusinesses() {
-  if (selectedTags.size === 0) {
-    const cards = businessListEl.querySelectorAll(".business-card");
-    cards.forEach(card => {
-      card.style.display = "flex";
-    });
+  const cards = businessListEl.querySelectorAll(".business-card");
 
+  if (!currentLocalSearchQuery) {
+    cards.forEach(card => card.style.display = "flex");
     markersLayer.eachLayer(layer => {
       layer.setOpacity(1);
     });
-  } else {
-    const cards = businessListEl.querySelectorAll(".business-card");
-    cards.forEach((card, index) => {
-      const business = currentBusinesses[index];
-      if (business && business.tags) {
-        const businessTags = business.tags.split(',').map(t => t.trim().toLowerCase());
-        const hasMatch = Array.from(selectedTags).some(selectedTag =>
-          businessTags.includes(selectedTag)
-        );
-        card.style.display = hasMatch ? "flex" : "none";
-      } else {
-        card.style.display = "none";
-      }
-    });
+    return;
+  }
 
-    let markerIndex = 0;
-    markersLayer.eachLayer(layer => {
-      const business = currentBusinesses[markerIndex];
-      if (business && business.tags) {
-        const businessTags = business.tags.split(',').map(t => t.trim().toLowerCase());
-        const hasMatch = Array.from(selectedTags).some(selectedTag =>
-          businessTags.includes(selectedTag)
-        );
-        layer.setOpacity(hasMatch ? 1 : 0.2);
+  // Which business ids matched the query? We will use a Set to easily lookup markers
+  const matchedBusinessIds = new Set();
+
+  cards.forEach((card, index) => {
+    const business = currentBusinesses[index];
+    if (!business) return;
+
+    const searchableText = [
+      business.name,
+      business.category,
+      business.tags,
+      business.website,
+      business.address,
+      business.description,
+      business.city,
+      business.state
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    const hasMatch = searchableText.includes(currentLocalSearchQuery);
+    card.style.display = hasMatch ? "flex" : "none";
+
+    if (hasMatch) {
+      matchedBusinessIds.add(business.id);
+    }
+  });
+
+  markersLayer.eachLayer(layer => {
+    // If it's a parish marker, just leave it fully visible
+    if (layer.options && layer.options.isParish) {
+      layer.setOpacity(1);
+      return;
+    }
+
+    // If it's a business marker
+    if (layer.options && layer.options.businessId !== undefined) {
+      if (matchedBusinessIds.has(layer.options.businessId)) {
+        layer.setOpacity(1);
       } else {
         layer.setOpacity(0.2);
       }
-      markerIndex++;
-    });
-  }
+    }
+  });
 }
 
 // ==========================================
@@ -622,7 +598,7 @@ function renderParishes(parishes) {
     const pLat = parseFloat(p.lat);
     const pLng = parseFloat(p.lng);
     if (!isNaN(pLat) && !isNaN(pLng)) {
-      const marker = L.marker([pLat, pLng], { icon: churchIcon }).addTo(markersLayer);
+      const marker = L.marker([pLat, pLng], { icon: churchIcon, isParish: true }).addTo(markersLayer);
       marker.bindPopup(
         `<div style="text-align: center;">
           <strong style="color: #8b45ff;">⛪ ${p.name}</strong><br>
@@ -804,7 +780,7 @@ function renderBusinesses(businesses, bounds) {
     businessListEl.appendChild(card);
 
     if (!isNaN(bLat) && !isNaN(bLng)) {
-      const marker = L.marker([bLat, bLng], { icon: businessIcon }).addTo(markersLayer);
+      const marker = L.marker([bLat, bLng], { icon: businessIcon, businessId: b.id }).addTo(markersLayer);
       marker.bindPopup(
         `<strong>${b.name}</strong><br>${b.address || ""}${b.website
           ? `<br><a href="${b.website}" target="_blank">Website</a>`

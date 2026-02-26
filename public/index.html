@@ -85,14 +85,13 @@
       </div>
 
       <h2 id="sidebarTitle">Local Businesses</h2>
-      <div id="filterSection">
-        <button id="filterToggle" class="filter-toggle">
-          <span>🏷️ Filter by Tags</span>
-          <span id="filterArrow" class="arrow">▼</span>
-        </button>
-        <div id="filterDropdown" class="filter-dropdown hidden">
-          <div id="tagsList" class="tags-list"></div>
-          <button id="clearFilters" class="clear-filters-btn">Clear All Filters</button>
+      <div id="filterSection" class="local-search-section">
+        <div class="local-search-wrapper">
+          <i class="fas fa-filter local-search-icon"></i>
+          <input type="text" id="localSearchInput"
+            placeholder="Filter businesses by name, category, tags, or address..." autocomplete="off" />
+          <button type="button" id="clearLocalSearch" class="clear-local-search hidden" title="Clear search"><i
+              class="fas fa-times"></i></button>
         </div>
       </div>
       <div id="businessList"></div>
