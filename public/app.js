@@ -45,7 +45,7 @@ let parishesData = {}; // Store parish data by ID
 
 // Church icon for parishes (using SVG data URL for custom marker)
 const churchIconUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOGI0NWZmIj48cGF0aCBkPSJNMTIgMmwtMSAxdjJIOXYyaDJ2MmgtMnYyaDJ2MWgtMXY4aDR2LThoLTF2LTFoMnYtMmgtMlY3aDJWNWgtMlYzbC0xLTF6TTcgMTBoLTJ2Mmgydi0yek0xNyAxMGgydjJoLTJ2LTJ6Ii8+PC9zdmc+';
-const businessIconUrl = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
+const businessIconUrl = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E";
 
 // ==========================================
 // INITIALIZATION - Auto-load Wichita, KS
@@ -629,9 +629,9 @@ function renderBusinesses(businesses, bounds) {
 
   const businessIcon = L.icon({
     iconUrl: businessIconUrl,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    iconSize: [46, 46],
+    iconAnchor: [23, 46],
+    popupAnchor: [0, -46]
   });
 
   businessListEl.innerHTML = "";
