@@ -767,7 +767,7 @@ function renderBusinesses(businesses, bounds) {
     directionsBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       trackBusinessClick(b._id || b.id, b.name, 'directions_click');
-      openMapsApp(b.lat, b.lng, b.name);
+      openMapsApp(b.lat, b.lng, b.address || b.name);
     });
 
     info.appendChild(title);
@@ -905,7 +905,7 @@ function openMobileDetail(b, hoursDiv) {
     dirBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       trackBusinessClick(b._id || b.id, b.name, 'directions_click');
-      openMapsApp(b.lat, b.lng, b.name);
+      openMapsApp(b.lat, b.lng, b.address || b.name);
     });
   }
 }

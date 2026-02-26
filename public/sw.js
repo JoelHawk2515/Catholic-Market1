@@ -1,5 +1,5 @@
 // Service Worker for Catholic Market PWA
-const CACHE_NAME = 'catholic-market-v8';
+const CACHE_NAME = 'catholic-market-v9';
 const STATIC_ASSETS = [
     '/',
     '/style.css',
