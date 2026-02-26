@@ -50,6 +50,30 @@
                     your submission and it will appear on the map once approved.</p>
             </div>
 
+            <!-- Step Progress Indicator -->
+            <div class="step-progress" id="stepProgress">
+                <div class="step-item active" data-step="1">
+                    <div class="step-text">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Business Info</div>
+                    </div>
+                </div>
+                <div class="step-connector" id="connector1"></div>
+                <div class="step-item" data-step="2">
+                    <div class="step-text">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Location & Contact</div>
+                    </div>
+                </div>
+                <div class="step-connector" id="connector2"></div>
+                <div class="step-item" data-step="3">
+                    <div class="step-text">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Details</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Success Message (hidden by default) -->
             <div id="successMessage" class="success-message" style="display: none;">
                 <div class="success-icon"><i class="fas fa-check-circle"></i></div>
@@ -61,253 +85,278 @@
 
             <!-- Form -->
             <form id="businessForm" class="business-form">
-                <!-- Section: Basic Info -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-info-circle"></i>
-                        <h2>Basic Information</h2>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="businessName">Business Name <span class="required">*</span></label>
-                            <input type="text" id="businessName" name="businessName" required
-                                placeholder="e.g., St. Joseph's Coffee House" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="businessOwner">Owner Name</label>
-                            <input type="text" id="businessOwner" name="businessOwner" placeholder="e.g., John Smith" />
-                        </div>
-                        <div class="form-group">
-                            <label for="businessCategory">Category</label>
-                            <input type="text" id="businessCategory" name="businessCategory"
-                                placeholder="e.g., Coffee Shop, Restaurant, Plumber" />
-                        </div>
-                        <div class="form-group">
-                            <label for="businessTags">Tags <span
-                                    style="font-size: 0.8rem; color: #6b7380;">(comma-separated)</span></label>
-                            <input type="text" id="businessTags" name="businessTags"
-                                placeholder="e.g., cafe, bakery, family-friendly" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="businessDescription">Description</label>
-                            <textarea id="businessDescription" name="businessDescription" rows="3"
-                                placeholder="Tell us about your business..."></textarea>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Section: Location -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <h2>Location</h2>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="businessAddress">Full Address <span class="required">*</span></label>
-                            <input type="text" id="businessAddress" name="businessAddress" required
-                                placeholder="e.g., 123 Main St, Wichita, KS 67202" />
+                <!-- ═══ STEP 1: Business Info ═══ -->
+                <div class="wizard-step active" id="step1">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h2>Basic Information</h2>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="businessStreet">Street</label>
-                            <input type="text" id="businessStreet" name="businessStreet"
-                                placeholder="e.g., 123 Main St" />
-                        </div>
-                        <div class="form-group">
-                            <label for="businessCity">City <span class="required">*</span></label>
-                            <input type="text" id="businessCity" name="businessCity" required
-                                placeholder="e.g., Wichita" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="businessState">State</label>
-                            <input type="text" id="businessState" name="businessState" placeholder="e.g., KS" />
-                        </div>
-                        <div class="form-group">
-                            <label for="businessZip">ZIP Code</label>
-                            <input type="text" id="businessZip" name="businessZip" placeholder="e.g., 67202" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section: Contact -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-address-book"></i>
-                        <h2>Contact Information</h2>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="businessPhone">Phone Number</label>
-                            <input type="tel" id="businessPhone" name="businessPhone"
-                                placeholder="e.g., (316) 555-0123" />
-                        </div>
-                        <div class="form-group">
-                            <label for="businessEmail">Email</label>
-                            <input type="email" id="businessEmail" name="businessEmail"
-                                placeholder="e.g., info@business.com" />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="businessWebsite">Website</label>
-                            <input type="url" id="businessWebsite" name="businessWebsite"
-                                placeholder="e.g., https://www.mybusiness.com" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section: Parish -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-church"></i>
-                        <h2>Parish Affiliation</h2>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label for="businessParish">Associated Parish (Optional)</label>
-                            <p class="field-hint">Select the parish your business is affiliated with</p>
-                            <select id="businessParish" name="businessParish">
-                                <option value="">-- Select a Parish --</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section: Amenities -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-star"></i>
-                        <h2>Amenities</h2>
-                    </div>
-                    <div class="amenities-grid">
-                        <label class="amenity-checkbox" for="isOpen247">
-                            <input type="checkbox" id="isOpen247" name="isOpen247" />
-                            <div class="amenity-card">
-                                <i class="fas fa-clock"></i>
-                                <span>Open 24/7</span>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="businessName">Business Name <span class="required">*</span></label>
+                                <input type="text" id="businessName" name="businessName" required
+                                    placeholder="e.g., St. Joseph's Coffee House" />
                             </div>
-                        </label>
-                        <label class="amenity-checkbox" for="hasWifi">
-                            <input type="checkbox" id="hasWifi" name="hasWifi" />
-                            <div class="amenity-card">
-                                <i class="fas fa-wifi"></i>
-                                <span>Free WiFi</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="businessOwner">Owner Name</label>
+                                <input type="text" id="businessOwner" name="businessOwner"
+                                    placeholder="e.g., John Smith" />
                             </div>
-                        </label>
-                        <label class="amenity-checkbox" for="familyFriendly">
-                            <input type="checkbox" id="familyFriendly" name="familyFriendly" />
-                            <div class="amenity-card">
-                                <i class="fas fa-users"></i>
-                                <span>Family Friendly</span>
+                            <div class="form-group">
+                                <label for="businessCategory">Category</label>
+                                <input type="text" id="businessCategory" name="businessCategory"
+                                    placeholder="e.g., Coffee Shop, Restaurant" />
                             </div>
-                        </label>
-                        <label class="amenity-checkbox" for="hasParking">
-                            <input type="checkbox" id="hasParking" name="hasParking" />
-                            <div class="amenity-card">
-                                <i class="fas fa-square-parking"></i>
-                                <span>Parking Available</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="businessTags">Tags <span
+                                        style="font-size: 0.8rem; color: #6b7394;">(comma-separated)</span></label>
+                                <input type="text" id="businessTags" name="businessTags"
+                                    placeholder="e.g., cafe, bakery, family-friendly" />
                             </div>
-                        </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="businessDescription">Description</label>
+                                <textarea id="businessDescription" name="businessDescription" rows="3"
+                                    placeholder="Tell us about your business..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-nav">
+                        <a href="/" class="btn-back"><i class="fas fa-times"></i> Cancel</a>
+                        <button type="button" class="btn-next" onclick="goToStep(2)">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Section: Business Image -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-image"></i>
-                        <h2>Business Image</h2>
+                <!-- ═══ STEP 2: Location & Contact ═══ -->
+                <div class="wizard-step" id="step2">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h2>Location</h2>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="businessAddress">Full Address <span class="required">*</span></label>
+                                <input type="text" id="businessAddress" name="businessAddress" required
+                                    placeholder="e.g., 123 Main St, Wichita, KS 67202" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="businessStreet">Street</label>
+                                <input type="text" id="businessStreet" name="businessStreet"
+                                    placeholder="e.g., 123 Main St" />
+                            </div>
+                            <div class="form-group">
+                                <label for="businessCity">City <span class="required">*</span></label>
+                                <input type="text" id="businessCity" name="businessCity" required
+                                    placeholder="e.g., Wichita" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="businessState">State</label>
+                                <input type="text" id="businessState" name="businessState" placeholder="e.g., KS" />
+                            </div>
+                            <div class="form-group">
+                                <label for="businessZip">ZIP Code</label>
+                                <input type="text" id="businessZip" name="businessZip" placeholder="e.g., 67202" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="image-upload-area" id="imageUploadArea">
-                        <input type="file" id="businessImage" name="businessImage" accept="image/*"
-                            style="display: none;" />
-                        <div class="upload-placeholder" id="uploadPlaceholder">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <p>Drag & drop an image here or click to browse</p>
-                            <p class="upload-hint">Max file size: 5MB • JPEG, PNG, GIF, or WebP</p>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-address-book"></i>
+                            <h2>Contact Information</h2>
                         </div>
-                        <div class="image-preview" id="imagePreview" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview" />
-                            <button type="button" class="remove-image-btn" id="removeImageBtn">✕</button>
-                            <p class="image-name" id="imageName"></p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="businessPhone">Phone Number</label>
+                                <input type="tel" id="businessPhone" name="businessPhone"
+                                    placeholder="e.g., (316) 555-0123" />
+                            </div>
+                            <div class="form-group">
+                                <label for="businessEmail">Email</label>
+                                <input type="email" id="businessEmail" name="businessEmail"
+                                    placeholder="e.g., info@business.com" />
+                            </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="businessWebsite">Website</label>
+                                <input type="url" id="businessWebsite" name="businessWebsite"
+                                    placeholder="e.g., https://www.mybusiness.com" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-church"></i>
+                            <h2>Parish Affiliation</h2>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="businessParish">Associated Parish (Optional)</label>
+                                <p class="field-hint">Select the parish your business is affiliated with</p>
+                                <select id="businessParish" name="businessParish">
+                                    <option value="">-- Select a Parish --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-nav">
+                        <button type="button" class="btn-back" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="button" class="btn-next" onclick="goToStep(3)">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Section: Business Hours -->
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-clock"></i>
-                        <h2>Business Hours</h2>
-                    </div>
-                    <div class="schedule-container">
-                        <div class="schedule-day">
-                            <label class="day-label">Sunday</label>
-                            <input type="time" id="sundayOpen" name="sundayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="sundayClose" name="sundayClose" />
+                <!-- ═══ STEP 3: Details ═══ -->
+                <div class="wizard-step" id="step3">
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-star"></i>
+                            <h2>Amenities</h2>
                         </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Monday</label>
-                            <input type="time" id="mondayOpen" name="mondayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="mondayClose" name="mondayClose" />
-                        </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Tuesday</label>
-                            <input type="time" id="tuesdayOpen" name="tuesdayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="tuesdayClose" name="tuesdayClose" />
-                        </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Wednesday</label>
-                            <input type="time" id="wednesdayOpen" name="wednesdayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="wednesdayClose" name="wednesdayClose" />
-                        </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Thursday</label>
-                            <input type="time" id="thursdayOpen" name="thursdayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="thursdayClose" name="thursdayClose" />
-                        </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Friday</label>
-                            <input type="time" id="fridayOpen" name="fridayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="fridayClose" name="fridayClose" />
-                        </div>
-                        <div class="schedule-day">
-                            <label class="day-label">Saturday</label>
-                            <input type="time" id="saturdayOpen" name="saturdayOpen" />
-                            <span class="time-separator">to</span>
-                            <input type="time" id="saturdayClose" name="saturdayClose" />
+                        <div class="amenities-grid">
+                            <label class="amenity-checkbox" for="isOpen247">
+                                <input type="checkbox" id="isOpen247" name="isOpen247" />
+                                <div class="amenity-card">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Open 24/7</span>
+                                </div>
+                            </label>
+                            <label class="amenity-checkbox" for="hasWifi">
+                                <input type="checkbox" id="hasWifi" name="hasWifi" />
+                                <div class="amenity-card">
+                                    <i class="fas fa-wifi"></i>
+                                    <span>Free WiFi</span>
+                                </div>
+                            </label>
+                            <label class="amenity-checkbox" for="familyFriendly">
+                                <input type="checkbox" id="familyFriendly" name="familyFriendly" />
+                                <div class="amenity-card">
+                                    <i class="fas fa-users"></i>
+                                    <span>Family Friendly</span>
+                                </div>
+                            </label>
+                            <label class="amenity-checkbox" for="hasParking">
+                                <input type="checkbox" id="hasParking" name="hasParking" />
+                                <div class="amenity-card">
+                                    <i class="fas fa-square-parking"></i>
+                                    <span>Parking</span>
+                                </div>
+                            </label>
                         </div>
                     </div>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-image"></i>
+                            <h2>Business Image</h2>
+                        </div>
+                        <div class="image-upload-area" id="imageUploadArea">
+                            <input type="file" id="businessImage" name="businessImage" accept="image/*"
+                                style="display: none;" />
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <p>Drag & drop an image here or click to browse</p>
+                                <p class="upload-hint">Max file size: 5MB • JPEG, PNG, GIF, or WebP</p>
+                            </div>
+                            <div class="image-preview" id="imagePreview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview" />
+                                <button type="button" class="remove-image-btn" id="removeImageBtn">✕</button>
+                                <p class="image-name" id="imageName"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-clock"></i>
+                            <h2>Business Hours</h2>
+                        </div>
+                        <div class="schedule-container">
+                            <div class="schedule-day">
+                                <label class="day-label">Sunday</label>
+                                <input type="time" id="sundayOpen" name="sundayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="sundayClose" name="sundayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Monday</label>
+                                <input type="time" id="mondayOpen" name="mondayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="mondayClose" name="mondayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Tuesday</label>
+                                <input type="time" id="tuesdayOpen" name="tuesdayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="tuesdayClose" name="tuesdayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Wednesday</label>
+                                <input type="time" id="wednesdayOpen" name="wednesdayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="wednesdayClose" name="wednesdayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Thursday</label>
+                                <input type="time" id="thursdayOpen" name="thursdayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="thursdayClose" name="thursdayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Friday</label>
+                                <input type="time" id="fridayOpen" name="fridayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="fridayClose" name="fridayClose" />
+                            </div>
+                            <div class="schedule-day">
+                                <label class="day-label">Saturday</label>
+                                <input type="time" id="saturdayOpen" name="saturdayOpen" />
+                                <span class="time-separator">to</span>
+                                <input type="time" id="saturdayClose" name="saturdayClose" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="wizard-nav">
+                        <button type="button" class="btn-back" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn-next" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Submit Business
+                        </button>
+                    </div>
+
+                    <!-- Error message -->
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
                 </div>
 
-                <!-- Submit -->
-                <div class="form-actions">
-                    <a href="/" class="btn-secondary"><i class="fas fa-times"></i> Cancel</a>
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i> Submit Business
-                    </button>
-                </div>
-
-                <!-- Error message -->
-                <div id="errorMessage" class="error-message" style="display: none;"></div>
             </form>
         </div>
     </main>

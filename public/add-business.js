@@ -1,5 +1,83 @@
 // add-business.js - Form handling for the dedicated Add Business page
 
+let currentStep = 1;
+const totalSteps = 3;
+
+// Wizard navigation
+function goToStep(step) {
+    // Validate current step before moving forward
+    if (step > currentStep && !validateStep(currentStep)) {
+        return;
+    }
+
+    currentStep = step;
+
+    // Show/hide wizard steps
+    document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('step' + step);
+    if (target) target.classList.add('active');
+
+    updateStepUI();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateStep(step) {
+    hideError();
+    if (step === 1) {
+        const name = document.getElementById('businessName').value.trim();
+        if (!name) {
+            showError('Business name is required.');
+            document.getElementById('businessName').focus();
+            return false;
+        }
+    } else if (step === 2) {
+        const address = document.getElementById('businessAddress').value.trim();
+        const city = document.getElementById('businessCity').value.trim();
+        if (!address) {
+            showError('Full address is required.');
+            document.getElementById('businessAddress').focus();
+            return false;
+        }
+        if (!city) {
+            showError('City is required.');
+            document.getElementById('businessCity').focus();
+            return false;
+        }
+    }
+    return true;
+}
+
+function updateStepUI() {
+    const items = document.querySelectorAll('.step-item');
+    const connectors = document.querySelectorAll('.step-connector');
+
+    items.forEach((item, i) => {
+        const stepNum = i + 1;
+        item.classList.remove('active', 'completed');
+        const circle = item.querySelector('.step-circle');
+
+        if (stepNum < currentStep) {
+            item.classList.add('completed');
+            circle.innerHTML = '<i class="fas fa-check" style="font-size:0.75rem"></i>';
+        } else if (stepNum === currentStep) {
+            item.classList.add('active');
+            circle.textContent = stepNum;
+        } else {
+            circle.textContent = stepNum;
+        }
+    });
+
+    connectors.forEach((conn, i) => {
+        if (i + 1 < currentStep) {
+            conn.classList.add('completed');
+            conn.style.background = '#34d399';
+        } else {
+            conn.classList.remove('completed');
+            conn.style.background = '';
+        }
+    });
+}
+
 // DOM Elements
 const businessForm = document.getElementById("businessForm");
 const submitBtn = document.getElementById("submitBtn");
@@ -195,8 +273,10 @@ businessForm.addEventListener("submit", async (e) => {
         const data = await res.json();
 
         if (res.ok) {
-            // Show success message, hide form
+            // Show success message, hide form and step progress
             businessForm.style.display = "none";
+            const stepProgress = document.getElementById('stepProgress');
+            if (stepProgress) stepProgress.style.display = 'none';
             successMessage.style.display = "block";
             window.scrollTo({ top: 0, behavior: "smooth" });
         } else {

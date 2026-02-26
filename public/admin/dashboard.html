@@ -9,100 +9,528 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* ── Admin Dashboard Layout ── */
+    body.admin-body {
+      background: var(--bg-base, #0c0e14);
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      color: var(--text-primary, #eef0f6);
+    }
+
+    /* ── Admin Sidebar ── */
+    .admin-sidebar {
+      width: 260px;
+      background: var(--bg-surface, #14161e);
+      border-right: 1px solid var(--border, #252938);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .admin-sidebar-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border, #252938);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .admin-sidebar-header img {
+      height: 32px;
+      filter: brightness(1.15);
+    }
+
+    .admin-sidebar-header span {
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .admin-sidebar-nav {
+      flex: 1;
+      padding: 0.75rem 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted, #6b7394);
+      padding: 1rem 1.5rem 0.5rem;
+    }
+
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1.5rem;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-nav-item:hover {
+      background: rgba(91, 141, 239, 0.06);
+      color: var(--text-primary, #eef0f6);
+    }
+
+    .sidebar-nav-item.active {
+      background: rgba(91, 141, 239, 0.08);
+      color: #5b8def;
+      border-left-color: #5b8def;
+    }
+
+    .sidebar-nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border, #252938);
+    }
+
+    .sidebar-footer button {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #2e3348);
+      background: transparent;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-footer button:hover {
+      background: rgba(248, 113, 113, 0.08);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #f87171;
+    }
+
+    /* ── Main Content ── */
+    .admin-main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 2rem 2.5rem;
+      max-width: 1200px;
+    }
+
+    .admin-main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-main-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary, #eef0f6);
+    }
+
+    .admin-main-subtitle {
+      color: var(--text-muted, #6b7394);
+      font-size: 0.9rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-light, #2e3348);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon.blue {
+      background: rgba(91, 141, 239, 0.12);
+      color: #5b8def;
+    }
+
+    .kpi-icon.amber {
+      background: rgba(251, 191, 36, 0.12);
+      color: #fbbf24;
+    }
+
+    .kpi-icon.green {
+      background: rgba(52, 211, 153, 0.12);
+      color: #34d399;
+    }
+
+    .kpi-icon.purple {
+      background: rgba(167, 139, 250, 0.12);
+      color: #a78bfa;
+    }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary, #eef0f6);
+      line-height: 1.2;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted, #6b7394);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Spotlight Config Card ── */
+    .spotlight-config-card {
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .spotlight-config-card h3 {
+      color: var(--text-primary, #eef0f6);
+      margin: 0 0 1rem;
+      font-size: 1rem;
+    }
+
+    .spotlight-config-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .spotlight-config-row label {
+      display: block;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .spotlight-config-row select,
+    .spotlight-config-row input[type="time"] {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, #252938);
+      background: var(--bg-base, #0c0e14);
+      color: var(--text-primary, #eef0f6);
+      font-size: 0.85rem;
+      color-scheme: dark;
+    }
+
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .toggle-wrapper input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #5b8def;
+    }
+
+    .toggle-wrapper label {
+      color: var(--text-secondary, #9ba3c0);
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    /* ── Mobile sidebar toggle ── */
+    .admin-sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 200;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      color: var(--text-primary, #eef0f6);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .admin-main {
+        margin-left: 0;
+        padding: 4rem 1rem 2rem;
+      }
+
+      .admin-sidebar-toggle {
+        display: flex;
+      }
+
+      .kpi-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .kpi-row {
+        grid-template-columns: 1fr;
+      }
+
+      .spotlight-config-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
 </head>
 
-<body class="admin-body" style="background: #05070b; padding: 0;">
-  <nav id="top-nav" style="position: relative;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <img src="/img/logo.png" alt="Logo" class="logo-small" />
-      <span style="color: #a7b0ce; font-size: 0.9rem;">Admin Dashboard</span>
+<body class="admin-body">
+  <!-- Mobile Sidebar Toggle -->
+  <button class="admin-sidebar-toggle" id="sidebarToggle"
+    onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-header">
+      <img src="/img/logo.png" alt="Logo" />
+      <span>Admin Panel</span>
     </div>
-    <div style="display: flex; gap: 1rem; align-items: center;">
-      <a href="/admin/bulk-upload.html" class="btn-refresh"
-        style="font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration: none;">📄 Bulk Upload</a>
-      <button id="mapCoordinatesBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">🗺️ Map
-        Coordinates</button>
-      <button id="logoutBtn" style="background: #272b3a;">Logout</button>
+
+    <nav class="admin-sidebar-nav">
+      <div class="sidebar-nav-label">Management</div>
+      <button class="sidebar-nav-item active" data-tab="pending" onclick="switchTab('pending')">
+        <i class="fas fa-clock"></i> Pending Reviews
+      </button>
+      <button class="sidebar-nav-item" data-tab="businesses" onclick="switchTab('businesses')">
+        <i class="fas fa-store"></i> Businesses
+      </button>
+      <button class="sidebar-nav-item" data-tab="parishes" onclick="switchTab('parishes')">
+        <i class="fas fa-church"></i> Parishes
+      </button>
+      <button class="sidebar-nav-item" data-tab="spotlight" onclick="switchTab('spotlight')">
+        <i class="fas fa-star"></i> Spotlight Queue
+      </button>
+
+      <div class="sidebar-nav-label">Tools</div>
+      <a class="sidebar-nav-item" href="/admin/bulk-upload.html">
+        <i class="fas fa-file-import"></i> Bulk Upload
+      </a>
+      <button class="sidebar-nav-item" id="mapCoordinatesBtn">
+        <i class="fas fa-map"></i> Map Coordinates
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
-  </nav>
+  </aside>
 
-  <div style="padding: 6rem 2rem 2rem; max-width: 1400px; margin: 0 auto;">
-    <h1
-      style="color: #f5f7ff; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-      <span>Pending Business Submissions</span>
-      <button id="refreshPendingBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">🔄
-        Refresh</button>
-    </h1>
-    <p style="color: #a7b0ce; margin-bottom: 2rem;">Review and approve new business listings</p>
-
-    <div id="pendingList" class="admin-pending-list"></div>
-
-    <div style="margin-top: 3rem;">
-      <div class="admin-tabs">
-        <button class="admin-tab active" data-tab="businesses">Businesses</button>
-        <button class="admin-tab" data-tab="parishes">Parishes</button>
-        <button class="admin-tab" data-tab="spotlight">Spotlight Queue</button>
-      </div>
-
-      <div id="businessesTab" class="admin-tab-content active">
-        <div style="margin-bottom: 1.5rem;">
-          <button id="addBusinessBtn" class="btn-refresh" style="font-size: 0.9rem; padding: 0.75rem 1.5rem;">+ Add
-            Business</button>
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- KPI Row -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card">
+        <div class="kpi-icon amber"><i class="fas fa-clock"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiPending">–</span>
+          <span class="kpi-label">Pending</span>
         </div>
-        <div id="approvedList" class="admin-approved-list"></div>
       </div>
-
-      <div id="parishesTab" class="admin-tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <button id="addParishBtn" class="btn-refresh" style="font-size: 0.9rem; padding: 0.75rem 1.5rem;">+ Add
-            Parish</button>
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fas fa-store"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiBusinesses">–</span>
+          <span class="kpi-label">Businesses</span>
         </div>
-        <div id="parishesList" class="admin-parishes-list"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon purple"><i class="fas fa-church"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiParishes">–</span>
+          <span class="kpi-label">Parishes</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fas fa-star"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiSpotlight">–</span>
+          <span class="kpi-label">In Queue</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Contents -->
+    <div id="pendingTab" class="admin-tab-content active">
+      <div class="admin-main-header">
+        <h1>Pending Submissions</h1>
+        <button id="refreshPendingBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+      <p class="admin-main-subtitle">Review and approve new business listings</p>
+      <div id="pendingList" class="admin-pending-list"></div>
+    </div>
+
+    <div id="businessesTab" class="admin-tab-content">
+      <div class="admin-main-header">
+        <h1>All Businesses</h1>
+        <button id="addBusinessBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+          <i class="fas fa-plus"></i> Add Business
+        </button>
+      </div>
+      <p class="admin-main-subtitle">Manage approved business listings</p>
+      <div id="approvedList" class="admin-approved-list"></div>
+    </div>
+
+    <div id="parishesTab" class="admin-tab-content">
+      <div class="admin-main-header">
+        <h1>Parishes</h1>
+        <button id="addParishBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+          <i class="fas fa-plus"></i> Add Parish
+        </button>
+      </div>
+      <p class="admin-main-subtitle">Manage parish listings</p>
+      <div id="parishesList" class="admin-parishes-list"></div>
+    </div>
+
+    <div id="spotlightTab" class="admin-tab-content">
+      <div class="admin-main-header">
+        <h1>Spotlight Queue</h1>
       </div>
 
-      <div id="spotlightTab" class="admin-tab-content">
-        <div
-          style="background: #111424; border: 1px solid #1e2235; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
-          <h3 style="color: #f5f7ff; margin: 0 0 1rem;">Automated Spotlight Schedule</h3>
-          <div style="display: flex; gap: 1rem; align-items: flex-end;">
-            <div>
-              <label style="display: block; color: #a7b0ce; margin-bottom: 0.25rem;">Day of Week</label>
-              <select id="spotlightDay"
-                style="padding: 0.5rem; border-radius: 4px; border: 1px solid #323854; background: #05070b; color: white;">
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-            </div>
-            <div>
-              <label style="display: block; color: #a7b0ce; margin-bottom: 0.25rem;">Time (Central)</label>
-              <input type="time" id="spotlightTime"
-                style="padding: 0.5rem; border-radius: 4px; border: 1px solid #323854; background: #05070b; color: white; color-scheme: dark;" />
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <input type="checkbox" id="spotlightActive" style="width: 18px; height: 18px;" />
-              <label style="color: #a7b0ce; margin: 0;">Enabled</label>
-            </div>
-            <button id="saveSpotlightConfigBtn" class="btn-refresh"
-              style="font-size: 0.85rem; padding: 0.5rem 1rem;">Save Schedule</button>
+      <div class="spotlight-config-card">
+        <h3><i class="fas fa-calendar-alt" style="margin-right:0.5rem; color:#a78bfa;"></i>Automated Schedule</h3>
+        <div class="spotlight-config-row">
+          <div>
+            <label>Day of Week</label>
+            <select id="spotlightDay">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
           </div>
-        </div>
-
-        <p style="color: #8b45ff; margin-bottom: 1rem;"><em>Drag and drop businesses to reorder. The top item is sent
-            next.</em></p>
-        <div id="spotlightQueueList" class="admin-approved-list">
-          <p style="color: #a7b0ce;">Loading queue...</p>
+          <div>
+            <label>Time (Central)</label>
+            <input type="time" id="spotlightTime" />
+          </div>
+          <div class="toggle-wrapper">
+            <input type="checkbox" id="spotlightActive" />
+            <label>Enabled</label>
+          </div>
+          <button id="saveSpotlightConfigBtn" class="btn-refresh" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+            Save Schedule
+          </button>
         </div>
       </div>
+
+      <p style="color: var(--accent-purple, #a78bfa); margin-bottom: 1rem; font-size: 0.9rem;">
+        <em><i class="fas fa-grip-vertical" style="margin-right:0.3rem;"></i>Drag and drop to reorder. The top item is
+          sent next.</em>
+      </p>
+      <div id="spotlightQueueList" class="admin-approved-list">
+        <p style="color: var(--text-secondary, #9ba3c0);">Loading queue...</p>
+      </div>
     </div>
-  </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <script>
+    // Tab switching for sidebar nav
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.admin-tab-content').forEach(tc => tc.classList.remove('active'));
+      // Show target
+      const target = document.getElementById(tabName + 'Tab');
+      if (target) target.classList.add('active');
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.tab === tabName) item.classList.add('active');
+      });
+      // Close mobile sidebar
+      document.querySelector('.admin-sidebar').classList.remove('open');
+    }
+  </script>
   <script src="/admin/admin-dashboard.js"></script>
 </body>
 

@@ -23,22 +23,19 @@ const mapCoordinatesBtn = document.getElementById("mapCoordinatesBtn");
 const addBusinessBtn = document.getElementById("addBusinessBtn");
 const addParishBtn = document.getElementById("addParishBtn");
 
-// Tab functionality
-const tabs = document.querySelectorAll(".admin-tab");
-const tabContents = document.querySelectorAll(".admin-tab-content");
+// Tab functionality is handled by switchTab() in the HTML.
+// We just need to populate KPI cards after data loads.
 
-tabs.forEach(tab => {
-  tab.addEventListener("click", () => {
-    const tabName = tab.dataset.tab;
-
-    // Update active states
-    tabs.forEach(t => t.classList.remove("active"));
-    tabContents.forEach(tc => tc.classList.remove("active"));
-
-    tab.classList.add("active");
-    document.getElementById(`${tabName}Tab`).classList.add("active");
-  });
-});
+function updateKPIs(pendingCount, businessCount, parishCount, spotlightCount) {
+  const kpiPending = document.getElementById('kpiPending');
+  const kpiBusinesses = document.getElementById('kpiBusinesses');
+  const kpiParishes = document.getElementById('kpiParishes');
+  const kpiSpotlight = document.getElementById('kpiSpotlight');
+  if (kpiPending) kpiPending.textContent = pendingCount ?? '–';
+  if (kpiBusinesses) kpiBusinesses.textContent = businessCount ?? '–';
+  if (kpiParishes) kpiParishes.textContent = parishCount ?? '–';
+  if (kpiSpotlight) kpiSpotlight.textContent = spotlightCount ?? '–';
+}
 
 // Refresh pending button
 refreshPendingBtn.addEventListener("click", () => {
@@ -1469,4 +1466,74 @@ async function loadSpotlightQueue() {
   }
 }
 
-loadParishes();
+// ==========================================
+// INITIALIZATION
+// ==========================================
+
+async function initDashboard() {
+  try {
+    // Load all data in parallel
+    const [pendingRes, approvedRes, parishesRes] = await Promise.all([
+      fetch("/api/admin/submissions/pending"),
+      fetch("/api/admin/businesses/approved"),
+      fetch("/api/admin/parishes")
+    ]);
+
+    const pendingData = pendingRes.ok ? await pendingRes.json() : [];
+    const approvedData = approvedRes.ok ? await approvedRes.json() : [];
+    const parishesData = parishesRes.ok ? await parishesRes.json() : [];
+
+    // Render pending
+    if (pendingData.length === 0) {
+      pendingList.innerHTML = '<p style="color: var(--text-secondary, #9ba3c0);">No pending submissions</p>';
+    } else {
+      pendingList.innerHTML = "";
+      pendingData.forEach(sub => {
+        pendingList.appendChild(createSubmissionCard(sub));
+      });
+    }
+
+    // Render approved businesses
+    if (approvedData.length === 0) {
+      approvedList.innerHTML = '<p style="color: var(--text-secondary, #9ba3c0);">No approved businesses yet</p>';
+    } else {
+      approvedList.innerHTML = "";
+      approvedData.forEach(biz => {
+        approvedList.appendChild(createApprovedCard(biz));
+      });
+    }
+
+    // Render parishes
+    if (parishesData.length === 0) {
+      parishesList.innerHTML = '<p style="color: var(--text-secondary, #9ba3c0);">No parishes yet</p>';
+    } else {
+      parishesList.innerHTML = "";
+      parishesData.forEach(parish => {
+        parishesList.appendChild(createParishCard(parish));
+      });
+    }
+
+    // Load spotlight queue separately (has its own complex rendering)
+    let spotlightCount = 0;
+    try {
+      const qRes = await fetch('/api/admin/spotlight-queue');
+      if (qRes.ok) {
+        const qData = await qRes.json();
+        spotlightCount = qData.queue ? qData.queue.length : 0;
+      }
+    } catch (e) { /* ignore */ }
+
+    // Load spotlight queue UI
+    if (typeof loadSpotlightQueue === 'function') {
+      loadSpotlightQueue();
+    }
+
+    // Update KPI cards
+    updateKPIs(pendingData.length, approvedData.length, parishesData.length, spotlightCount);
+
+  } catch (err) {
+    console.error("Dashboard initialization error:", err);
+  }
+}
+
+initDashboard();
