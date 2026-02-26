@@ -42,6 +42,8 @@ let currentBusinesses = [];
 let currentParishes = [];
 let currentLocalSearchQuery = "";
 let parishesData = {}; // Store parish data by ID
+let activeCategoryFilter = null; // Currently selected category chip
+let activeAmenityFilters = new Set(); // Active amenity toggles
 
 // Church icon for parishes (using SVG data URL for custom marker)
 const churchIconUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOGI0NWZmIj48cGF0aCBkPSJNMTIgMmwtMSAxdjJIOXYyaDJ2MmgtMnYyaDJ2MWgtMXY4aDR2LThoLTF2LTFoMnYtMmgtMlY3aDJWNWgtMlYzbC0xLTF6TTcgMTBoLTJ2Mmgydi0yek0xNyAxMGgydjJoLTJ2LTJ6Ii8+PC9zdmc+';
@@ -211,6 +213,74 @@ if (clearLocalSearch) {
     filterBusinesses();
   });
 }
+
+// ==========================================
+// CATEGORY & AMENITY FILTER HANDLING
+// ==========================================
+
+function populateCategoryChips() {
+  const container = document.getElementById('categoryFilters');
+  if (!container) return;
+
+  // Count categories
+  const categoryCounts = {};
+  currentBusinesses.forEach(b => {
+    if (b.category) {
+      const cat = b.category.trim();
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    }
+  });
+
+  // Sort by count descending
+  const sorted = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
+
+  container.innerHTML = '';
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<span style="color: var(--text-muted); font-size: var(--fs-xs);">No categories found</span>';
+    return;
+  }
+
+  // "All" chip
+  const allChip = document.createElement('button');
+  allChip.className = 'filter-chip' + (activeCategoryFilter === null ? ' active' : '');
+  allChip.innerHTML = `All <span class="chip-count">${currentBusinesses.length}</span>`;
+  allChip.addEventListener('click', () => {
+    activeCategoryFilter = null;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    allChip.classList.add('active');
+    filterBusinesses();
+  });
+  container.appendChild(allChip);
+
+  sorted.forEach(([cat, count]) => {
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip' + (activeCategoryFilter === cat ? ' active' : '');
+    chip.innerHTML = `${cat} <span class="chip-count">${count}</span>`;
+    chip.addEventListener('click', () => {
+      activeCategoryFilter = cat;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filterBusinesses();
+    });
+    container.appendChild(chip);
+  });
+}
+
+// Amenity toggle buttons
+document.querySelectorAll('.filter-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    if (activeAmenityFilters.has(filter)) {
+      activeAmenityFilters.delete(filter);
+      btn.classList.remove('active');
+    } else {
+      activeAmenityFilters.add(filter);
+      btn.classList.add('active');
+    }
+    filterBusinesses();
+  });
+});
 
 // ==========================================
 // BUSINESS HOURS HELPERS
@@ -514,13 +584,19 @@ async function showMapForBounds(southWest, northEast, label) {
     });
 
     currentLocalSearchQuery = "";
+    activeCategoryFilter = null;
+    activeAmenityFilters.clear();
     if (localSearchInput) localSearchInput.value = "";
     if (clearLocalSearch) clearLocalSearch.classList.add("hidden");
+    // Reset filter UI
+    document.querySelectorAll('.filter-toggle').forEach(b => b.classList.remove('active'));
 
     markersLayer.clearLayers();
 
     renderBusinesses(businesses, bounds);
     renderParishes(parishes);
+    populateCategoryChips();
+    updateResultsCount(businesses.length, businesses.length);
 
     // Spotlight Handle Navigation
     const urlParams = new URLSearchParams(window.location.search);
@@ -572,57 +648,92 @@ function searchByCoords(lat, lng) {
 
 function filterBusinesses() {
   const cards = businessListEl.querySelectorAll(".business-card");
+  const hasAnyFilter = currentLocalSearchQuery || activeCategoryFilter !== null || activeAmenityFilters.size > 0;
 
-  if (!currentLocalSearchQuery) {
+  if (!hasAnyFilter) {
     cards.forEach(card => card.style.display = "flex");
     markersLayer.eachLayer(layer => {
       layer.setOpacity(1);
     });
+    updateResultsCount(currentBusinesses.length, currentBusinesses.length);
     return;
   }
 
-  // Which business ids matched the query? We will use a Set to easily lookup markers
   const matchedBusinessIds = new Set();
+  let visibleCount = 0;
 
   cards.forEach((card, index) => {
     const business = currentBusinesses[index];
     if (!business) return;
 
-    const searchableText = [
-      business.name,
-      business.category,
-      business.tags,
-      business.website,
-      business.address,
-      business.description,
-      business.city,
-      business.state
-    ].filter(Boolean).join(" ").toLowerCase();
+    let matches = true;
 
-    const hasMatch = searchableText.includes(currentLocalSearchQuery);
-    card.style.display = hasMatch ? "flex" : "none";
+    // Text search filter
+    if (currentLocalSearchQuery) {
+      const searchableText = [
+        business.name,
+        business.category,
+        business.tags,
+        business.website,
+        business.address,
+        business.description,
+        business.city,
+        business.state
+      ].filter(Boolean).join(" ").toLowerCase();
+      if (!searchableText.includes(currentLocalSearchQuery)) {
+        matches = false;
+      }
+    }
 
-    if (hasMatch) {
+    // Category filter
+    if (matches && activeCategoryFilter !== null) {
+      if (!business.category || business.category.trim() !== activeCategoryFilter) {
+        matches = false;
+      }
+    }
+
+    // Amenity filters (all must match)
+    if (matches && activeAmenityFilters.size > 0) {
+      for (const filter of activeAmenityFilters) {
+        if (!business[filter]) {
+          matches = false;
+          break;
+        }
+      }
+    }
+
+    card.style.display = matches ? "flex" : "none";
+    if (matches) {
       matchedBusinessIds.add(business.id);
+      visibleCount++;
     }
   });
 
   markersLayer.eachLayer(layer => {
-    // If it's a parish marker, just leave it fully visible
     if (layer.options && layer.options.isParish) {
       layer.setOpacity(1);
       return;
     }
-
-    // If it's a business marker
     if (layer.options && layer.options.businessId !== undefined) {
       if (matchedBusinessIds.has(layer.options.businessId)) {
         layer.setOpacity(1);
       } else {
-        layer.setOpacity(0.2);
+        layer.setOpacity(0.15);
       }
     }
   });
+
+  updateResultsCount(visibleCount, currentBusinesses.length);
+}
+
+function updateResultsCount(visible, total) {
+  const el = document.getElementById('resultsCount');
+  if (!el) return;
+  if (visible === total) {
+    el.textContent = `${total} business${total !== 1 ? 'es' : ''} found`;
+  } else {
+    el.textContent = `Showing ${visible} of ${total} business${total !== 1 ? 'es' : ''}`;
+  }
 }
 
 // ==========================================

@@ -309,8 +309,7 @@ async function editBusiness(id) {
 
     // Create edit modal
     const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'flex';
+    modal.className = 'modal active';
 
     const currentImageUrl = business.imageUrl || '/img/default-business.png';
 
@@ -789,8 +788,7 @@ async function editParish(id) {
     }
 
     const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'flex';
+    modal.className = 'modal active';
 
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">
@@ -935,8 +933,7 @@ function showAddBusinessModal() {
   let selectedImageFile = null;
 
   const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.style.display = 'flex';
+  modal.className = 'modal active';
 
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 600px;">
@@ -1206,8 +1203,7 @@ function showAddBusinessModal() {
 // Add Parish Modal
 function showAddParishModal() {
   const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.style.display = 'flex';
+  modal.className = 'modal active';
 
   modal.innerHTML = `
       <div class="modal-content" style="max-width: 600px;">

@@ -167,17 +167,17 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--border);
-  padding: 0 var(--sp-5);
+  background: rgba(12, 14, 20, 0.55);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0 var(--sp-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 1000;
-  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
-  height: 60px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  height: 64px;
   gap: var(--sp-4);
 }
 
@@ -199,9 +199,11 @@ body {
 
 .nav-center {
   flex: 1;
-  max-width: 480px;
+  max-width: 560px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 .nav-search-form {
@@ -220,30 +222,35 @@ body {
 
 .nav-search-icon {
   position: absolute;
-  left: 0.85rem;
+  left: 1rem;
   color: var(--text-muted);
   font-size: var(--fs-sm);
   pointer-events: none;
   z-index: 1;
+  transition: color var(--duration-normal);
+}
+
+.nav-search-wrapper:focus-within .nav-search-icon {
+  color: var(--accent-primary);
 }
 
 .nav-search-form input {
   width: 100%;
-  padding: 0.55rem 0.85rem 0.55rem 2.25rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: rgba(12, 14, 20, 0.85);
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 22, 30, 0.7);
   color: var(--text-primary);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   outline: none;
-  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-fast);
+  transition: border-color var(--duration-normal), box-shadow var(--duration-normal), background var(--duration-normal);
   font-family: inherit;
 }
 
 .nav-search-form input:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.18);
-  background: var(--bg-base);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15), 0 0 20px rgba(91, 141, 239, 0.08);
+  background: rgba(12, 14, 20, 0.95);
 }
 
 .nav-search-form input::placeholder {
@@ -251,8 +258,8 @@ body {
 }
 
 .nav-search-form button {
-  padding: 0.55rem 1.1rem;
-  border-radius: var(--radius-md);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-full);
   border: none;
   background: var(--accent-gradient);
   color: #f5f7ff;
@@ -261,7 +268,7 @@ body {
   letter-spacing: 0.03em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 12px rgba(91, 141, 239, 0.3);
   transition: transform var(--duration-fast), box-shadow var(--duration-fast), filter var(--duration-fast);
   white-space: nowrap;
   font-family: inherit;
@@ -358,19 +365,23 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-top: 60px;
+  padding-top: 64px;
 }
 
 /* ── Map Hero Section ── */
 #map-hero {
   position: relative;
-  width: 100%;
+  width: calc(100% - 2rem);
+  max-width: 1600px;
   height: 42vh;
   min-height: 300px;
   max-height: 500px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin: 1rem auto;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(91, 141, 239, 0.06);
+  overflow: hidden;
 }
 
 #map {
@@ -457,6 +468,99 @@ body {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   padding: 0.5rem 0;
+}
+
+/* ── Category Filter Chips ── */
+.filter-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: var(--sp-2);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.filter-chip:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background: rgba(91, 141, 239, 0.06);
+}
+
+.filter-chip.active {
+  background: rgba(91, 141, 239, 0.15);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(91, 141, 239, 0.12);
+}
+
+.filter-chip .chip-count {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+/* ── Amenity Filter Toggles ── */
+.filter-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: var(--sp-2);
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-normal);
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.filter-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.filter-toggle.active {
+  background: rgba(91, 141, 239, 0.08);
+  border-color: rgba(91, 141, 239, 0.2);
+  color: var(--text-primary);
+}
+
+.filter-toggle i {
+  width: 18px;
+  text-align: center;
+  font-size: var(--fs-base);
+}
+
+.filter-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-2) 0;
 }
 
 /* ── Card Grid (Main Content) ── */
@@ -1018,14 +1122,15 @@ body {
   background: var(--bg-elevated);
   border-radius: var(--radius-xl);
   padding: 1.75rem 2rem 2rem;
-  max-width: 600px;
-  width: 100%;
+  max-width: 800px;
+  width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   animation: slideUp var(--duration-slow) var(--ease-out);
   position: relative;
+  margin: auto;
 }
 
 .modal-content::-webkit-scrollbar {
@@ -1604,6 +1709,9 @@ body {
     min-height: 180px;
     max-height: 280px;
     flex-shrink: 0;
+    width: calc(100% - 1rem);
+    margin: 0.5rem auto;
+    border-radius: var(--radius-lg);
   }
 
   .map-overlay-info {

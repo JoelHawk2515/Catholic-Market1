@@ -97,7 +97,7 @@
 
         <!-- Search & Filter -->
         <div class="filter-section">
-          <h3 class="filter-section-title"><i class="fas fa-filter"></i> Filter</h3>
+          <h3 class="filter-section-title"><i class="fas fa-search"></i> Search</h3>
           <div class="local-search-wrapper">
             <i class="fas fa-search local-search-icon"></i>
             <input type="text" id="localSearchInput" placeholder="Search businesses..." autocomplete="off" />
@@ -105,6 +105,40 @@
                 class="fas fa-times"></i></button>
           </div>
         </div>
+
+        <!-- Category Filter -->
+        <div class="filter-section">
+          <h3 class="filter-section-title"><i class="fas fa-tags"></i> Categories</h3>
+          <div id="categoryFilters" class="filter-categories">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
+
+        <!-- Amenity Filters -->
+        <div class="filter-section">
+          <h3 class="filter-section-title"><i class="fas fa-sliders-h"></i> Amenities</h3>
+          <div class="filter-toggles">
+            <button class="filter-toggle" data-filter="hasWifi">
+              <i class="fas fa-wifi" style="color: #7da8ff;"></i> Free WiFi
+            </button>
+            <button class="filter-toggle" data-filter="familyFriendly">
+              <i class="fas fa-users" style="color: #f9a8d4;"></i> Family Friendly
+            </button>
+            <button class="filter-toggle" data-filter="hasParking">
+              <i class="fas fa-square-parking" style="color: var(--accent-green);"></i> Parking
+            </button>
+            <button class="filter-toggle" data-filter="isOpen247">
+              <i class="fas fa-clock" style="color: var(--accent-primary);"></i> Open 24/7
+            </button>
+            <button class="filter-toggle" data-filter="verified">
+              <i class="fas fa-check-circle" style="color: var(--accent-green);"></i> Verified Only
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-divider"></div>
 
         <!-- Results count -->
         <div class="filter-results-count" id="resultsCount"></div>
