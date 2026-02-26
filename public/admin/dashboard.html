@@ -42,6 +42,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="businesses">Businesses</button>
         <button class="admin-tab" data-tab="parishes">Parishes</button>
+        <button class="admin-tab" data-tab="spotlight">Spotlight Queue</button>
       </div>
 
       <div id="businessesTab" class="admin-tab-content active">
@@ -59,9 +60,49 @@
         </div>
         <div id="parishesList" class="admin-parishes-list"></div>
       </div>
+
+      <div id="spotlightTab" class="admin-tab-content">
+        <div
+          style="background: #111424; border: 1px solid #1e2235; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h3 style="color: #f5f7ff; margin: 0 0 1rem;">Automated Spotlight Schedule</h3>
+          <div style="display: flex; gap: 1rem; align-items: flex-end;">
+            <div>
+              <label style="display: block; color: #a7b0ce; margin-bottom: 0.25rem;">Day of Week</label>
+              <select id="spotlightDay"
+                style="padding: 0.5rem; border-radius: 4px; border: 1px solid #323854; background: #05070b; color: white;">
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; color: #a7b0ce; margin-bottom: 0.25rem;">Time (Central)</label>
+              <input type="time" id="spotlightTime"
+                style="padding: 0.5rem; border-radius: 4px; border: 1px solid #323854; background: #05070b; color: white; color-scheme: dark;" />
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <input type="checkbox" id="spotlightActive" style="width: 18px; height: 18px;" />
+              <label style="color: #a7b0ce; margin: 0;">Enabled</label>
+            </div>
+            <button id="saveSpotlightConfigBtn" class="btn-refresh"
+              style="font-size: 0.85rem; padding: 0.5rem 1rem;">Save Schedule</button>
+          </div>
+        </div>
+
+        <p style="color: #8b45ff; margin-bottom: 1rem;"><em>Drag and drop businesses to reorder. The top item is sent
+            next.</em></p>
+        <div id="spotlightQueueList" class="admin-approved-list">
+          <p style="color: #a7b0ce;">Loading queue...</p>
+        </div>
+      </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
   <script src="/admin/admin-dashboard.js"></script>
 </body>
 

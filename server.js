@@ -9,9 +9,10 @@ const multer = require('multer');
 const fs = require('fs');
 const webpush = require('web-push');
 const connectDB = require("./db");
+const cron = require('node-cron');
 
 // Import models
-const { sequelize, Admin, Parish, Business, Submission, Analytics, PushSubscription } = require('./models-sequelize');
+const { sequelize, Admin, Parish, Business, Submission, Analytics, PushSubscription, SpotlightConfig, SpotlightQueue } = require('./models-sequelize');
 const { Op } = require('sequelize');
 
 const app = express();
@@ -1320,6 +1321,214 @@ app.post("/api/admin/spotlight", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Spotlight error:', error);
     res.status(500).json({ error: "Failed to send spotlight" });
+  }
+});
+
+// --- Spotlight Queue Routes ---
+
+// Admin: Get Spotlight Config
+app.get("/api/admin/spotlight-queue/config", requireAdmin, async (req, res) => {
+  try {
+    let config = await SpotlightConfig.findOne();
+    if (!config) {
+      config = await SpotlightConfig.create({ dayOfWeek: 1, timeOfDay: '12:00', isActive: true });
+    }
+    res.json(config);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get spotlight config" });
+  }
+});
+
+// Admin: Update Spotlight Config
+app.post("/api/admin/spotlight-queue/config", requireAdmin, async (req, res) => {
+  try {
+    const { dayOfWeek, timeOfDay, isActive } = req.body;
+    let config = await SpotlightConfig.findOne();
+    if (!config) {
+      config = await SpotlightConfig.create({ dayOfWeek, timeOfDay, isActive });
+    } else {
+      await config.update({ dayOfWeek, timeOfDay, isActive });
+    }
+    res.json({ success: true, config });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update spotlight config" });
+  }
+});
+
+// Admin: Get Spotlight Queue
+app.get("/api/admin/spotlight-queue", requireAdmin, async (req, res) => {
+  try {
+    const queue = await SpotlightQueue.findAll({
+      include: [{ model: Business, as: 'business' }],
+      order: [['orderIndex', 'ASC']]
+    });
+    // Format response to flatten the objects
+    const formatted = queue.map(q => {
+      const b = q.business ? q.business.toJSON() : null;
+      return {
+        id: q.id,
+        businessId: q.businessId,
+        orderIndex: q.orderIndex,
+        businessName: b ? b.name : "Unknown",
+        businessCity: b ? b.city : "Unknown"
+      };
+    });
+    res.json(formatted);
+  } catch (err) {
+    console.error("Queue get error:", err);
+    res.status(500).json({ error: "Failed to get spotlight queue" });
+  }
+});
+
+// Admin: Add to Spotlight Queue
+app.post("/api/admin/spotlight-queue", requireAdmin, async (req, res) => {
+  try {
+    const { businessId } = req.body;
+    const exists = await SpotlightQueue.findOne({ where: { businessId } });
+    if (exists) {
+      return res.status(400).json({ error: "Business is already in the spotlight queue" });
+    }
+
+    // Find the max order
+    const maxOrder = await SpotlightQueue.max('orderIndex') || 0;
+
+    const item = await SpotlightQueue.create({ businessId, orderIndex: maxOrder + 1 });
+    res.json({ success: true, item });
+  } catch (err) {
+    console.error("Queue add error:", err);
+    res.status(500).json({ error: "Failed to add to queue" });
+  }
+});
+
+// Admin: Reorder Spotlight Queue
+app.post("/api/admin/spotlight-queue/reorder", requireAdmin, async (req, res) => {
+  try {
+    const { orderedIds } = req.body; // Array of SpotlightQueue IDs in new order
+    if (!orderedIds || !Array.isArray(orderedIds)) {
+      return res.status(400).json({ error: "orderedIds array is required" });
+    }
+
+    for (let i = 0; i < orderedIds.length; i++) {
+      await SpotlightQueue.update({ orderIndex: i }, { where: { id: orderedIds[i] } });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Queue reorder error:", err);
+    res.status(500).json({ error: "Failed to reorder queue" });
+  }
+});
+
+// Admin: Remove from Spotlight Queue
+app.delete("/api/admin/spotlight-queue/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await SpotlightQueue.destroy({ where: { id } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to remove from queue" });
+  }
+});
+
+// Automated logic to consume the queue and send
+async function processSpotlightQueue() {
+  try {
+    const nextItem = await SpotlightQueue.findOne({
+      include: [{ model: Business, as: 'business' }],
+      order: [['orderIndex', 'ASC']]
+    });
+
+    if (!nextItem || !nextItem.business) {
+      console.log('Spotlight Queue is empty or invalid, nothing sent.');
+      if (nextItem) await nextItem.destroy();
+      return;
+    }
+
+    const business = nextItem.business;
+
+    // Check subscribers
+    const subscriptions = await PushSubscription.findAll();
+    if (subscriptions.length > 0) {
+      const payload = JSON.stringify({
+        title: '⭐ Business Spotlight of the Week!',
+        body: `Check out ${business.name}! ${business.description || business.address}`,
+        url: `/?spotlight=${business.id}`,
+        businessId: business.id,
+        imageUrl: business.imageUrl || undefined
+      });
+
+      const expiredEndpoints = [];
+      let sent = 0;
+      let failed = 0;
+
+      for (const sub of subscriptions) {
+        const pushOptions = {
+          endpoint: sub.endpoint,
+          keys: { p256dh: sub.p256dh, auth: sub.auth }
+        };
+        try {
+          await webpush.sendNotification(pushOptions, payload);
+          sent++;
+        } catch (err) {
+          failed++;
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            expiredEndpoints.push(sub.endpoint);
+          }
+        }
+      }
+
+      if (expiredEndpoints.length > 0) {
+        await PushSubscription.destroy({ where: { endpoint: expiredEndpoints } });
+      }
+      console.log(`Automated Spotlight sent for "${business.name}" (${sent} sent, ${failed} failed)`);
+    }
+
+    // Burn the item from the queue
+    await nextItem.destroy();
+
+  } catch (err) {
+    console.error('Process spotlight queue error:', err);
+  }
+}
+
+// Ensure the automated spotlight only runs once per trigger window using a flag tracking the last run minute
+let lastSpotlightRunMinute = -1;
+
+cron.schedule('* * * * *', async () => {
+  try {
+    const config = await SpotlightConfig.findOne();
+    if (!config || !config.isActive) return;
+
+    const now = new Date();
+
+    // Resolve standard local time details (America/Chicago timezone where the user resides)
+    const options = { timeZone: 'America/Chicago', hour12: false, hour: '2-digit', minute: '2-digit', weekday: 'short' };
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+
+    // A quick hack to extract day name and padded military time directly 
+    // Usually yields something like: "Sat, 14:05" or "Saturday, 14:05"
+    let localParts = formatter.formatToParts(now);
+
+    let dHour = 0; let dMin = 0; let dWeek = 0;
+    const weekMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+
+    for (let p of localParts) {
+      if (p.type === 'hour') dHour = p.value;
+      if (p.type === 'minute') dMin = p.value;
+      if (p.type === 'weekday') dWeek = weekMap[p.value];
+    }
+
+    const formattedTime = `${dHour}:${dMin}`;
+
+    // If it is the correct minute...
+    if (config.dayOfWeek === dWeek && config.timeOfDay === formattedTime) {
+      if (lastSpotlightRunMinute !== dMin) {
+        lastSpotlightRunMinute = dMin;
+        await processSpotlightQueue();
+      }
+    }
+  } catch (err) {
+    console.error('Failed processing cron clock:', err);
   }
 });
 

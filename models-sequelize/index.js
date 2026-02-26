@@ -38,6 +38,8 @@ const Business = require('./Business')(sequelize);
 const Submission = require('./Submission')(sequelize);
 const Analytics = require('./Analytics')(sequelize);
 const PushSubscription = require('./PushSubscription')(sequelize);
+const SpotlightConfig = require('./SpotlightConfig')(sequelize);
+const SpotlightQueue = require('./SpotlightQueue')(sequelize);
 
 // Define relationships
 Business.belongsTo(Parish, { foreignKey: 'parishId', as: 'parish' });
@@ -49,6 +51,9 @@ Submission.belongsTo(Admin, { foreignKey: 'reviewedBy', as: 'reviewer' });
 Analytics.belongsTo(Business, { foreignKey: 'businessId', as: 'business' });
 Business.hasMany(Analytics, { foreignKey: 'businessId', as: 'analytics' });
 
+SpotlightQueue.belongsTo(Business, { foreignKey: 'businessId', as: 'business' });
+Business.hasMany(SpotlightQueue, { foreignKey: 'businessId', as: 'spotlightQueue' });
+
 module.exports = {
   sequelize,
   Admin,
@@ -56,5 +61,7 @@ module.exports = {
   Business,
   Submission,
   Analytics,
-  PushSubscription
+  PushSubscription,
+  SpotlightConfig,
+  SpotlightQueue
 };

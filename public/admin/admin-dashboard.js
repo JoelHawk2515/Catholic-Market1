@@ -202,6 +202,8 @@ function createApprovedCard(biz) {
           ${biz.verified ? `<button class="btn-sponsored" onclick="toggleSponsored('${bizId}', ${!biz.sponsored})" style="background: ${biz.sponsored ? '#9ca3af' : '#f59e0b'};">${biz.sponsored ? '⭐ Remove Sponsor' : '⭐ Make Sponsor'}</button>` : ''}
           <button class="btn-spotlight" onclick="sendSpotlight('${bizId}', '${biz.name.replace(/'/g, "\\'")}')"
             style="background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">🔔 Spotlight</button>
+          <button class="btn-spotlight-queue" onclick="enqueueSpotlight('${bizId}')"
+            style="background: linear-gradient(135deg, #4f46e5, #3b82f6); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">📅 Queue</button>
           <button class="btn-delete" onclick="deleteBusiness('${bizId}')">Delete</button>
         </div>
       </div>
@@ -1280,4 +1282,191 @@ function showAddParishModal() {
     }
   });
 }
+
+// =====================================
+// SPOTLIGHT QUEUE & CONFIG LOGIC
+// =====================================
+
+// Load Configuration and Queue on tab click
+const spotlightTabBtn = document.querySelector('.admin-tab[data-tab="spotlight"]');
+if (spotlightTabBtn) {
+  spotlightTabBtn.addEventListener('click', () => {
+    loadSpotlightConfig();
+    loadSpotlightQueue();
+  });
+}
+
+async function loadSpotlightConfig() {
+  try {
+    const res = await fetch('/api/admin/spotlight-queue/config');
+    if (!res.ok) return;
+    const config = await res.json();
+    document.getElementById('spotlightDay').value = config.dayOfWeek || 0;
+    document.getElementById('spotlightTime').value = config.timeOfDay || '12:00';
+    document.getElementById('spotlightActive').checked = config.isActive;
+  } catch (err) {
+    console.error('Failed to load spotlight config:', err);
+  }
+}
+
+document.getElementById('saveSpotlightConfigBtn').addEventListener('click', async () => {
+  const dayOfWeek = parseInt(document.getElementById('spotlightDay').value, 10);
+  const timeOfDay = document.getElementById('spotlightTime').value;
+  const isActive = document.getElementById('spotlightActive').checked;
+
+  try {
+    const res = await fetch('/api/admin/spotlight-queue/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dayOfWeek, timeOfDay, isActive })
+    });
+    if (res.ok) {
+      alert("Spotlight schedule saved successfully.");
+    } else {
+      alert("Failed to save spotlight schedule.");
+    }
+  } catch (err) {
+    alert("Error saving schedule.");
+  }
+});
+
+async function enqueueSpotlight(businessId) {
+  try {
+    const res = await fetch('/api/admin/spotlight-queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId })
+    });
+
+    if (res.ok) {
+      alert("Business added to the end of the Spotlight Queue!");
+      loadSpotlightQueue();
+    } else {
+      const data = await res.json();
+      alert(data.error || "Failed to add to queue.");
+    }
+  } catch (err) {
+    alert("Error adding to queue.");
+  }
+}
+
+async function removeSpotlightQueueItem(queueId) {
+  if (!confirm("Remove this business from the queue?")) return;
+  try {
+    const res = await fetch(`/api/admin/spotlight-queue/${queueId}`, { method: 'DELETE' });
+    if (res.ok) {
+      loadSpotlightQueue();
+    } else {
+      alert("Failed to remove item from queue.");
+    }
+  } catch (err) {
+    alert("Error removing from queue.");
+  }
+}
+
+async function loadSpotlightQueue() {
+  const queueListEl = document.getElementById('spotlightQueueList');
+  try {
+    const res = await fetch('/api/admin/spotlight-queue');
+    const queue = await res.json();
+
+    if (!queue || queue.length === 0) {
+      queueListEl.innerHTML = '<p style="color: #a7b0ce;">Spotlight Queue is empty.</p>';
+      return;
+    }
+
+    // Sortable JS container
+    queueListEl.innerHTML = '';
+    const listContainer = document.createElement('div');
+    listContainer.className = 'spotlight-sortable-list';
+    listContainer.style.display = 'flex';
+    listContainer.style.flexDirection = 'column';
+    listContainer.style.gap = '0.75rem';
+
+    // Calculate scheduled dates manually
+    const dayOfWeek = parseInt(document.getElementById('spotlightDay').value, 10) || 1;
+    const timeOfDay = document.getElementById('spotlightTime').value || '12:00';
+    const [hh, mm] = timeOfDay.split(':').map(Number);
+
+    let baseDate = new Date();
+    // Move to the *next* occurrence of 'dayOfWeek'
+    let distanceToNext = (dayOfWeek + 7 - baseDate.getDay()) % 7;
+    // If today is the day, but time has passed, add 7 days
+    if (distanceToNext === 0) {
+      if (baseDate.getHours() > hh || (baseDate.getHours() === hh && baseDate.getMinutes() >= mm)) {
+        distanceToNext = 7;
+      }
+    }
+
+    baseDate.setDate(baseDate.getDate() + distanceToNext);
+    baseDate.setHours(hh, mm, 0, 0);
+
+    queue.forEach((item, index) => {
+      // Clone date and add index * 7 days
+      let scheduledDate = new Date(baseDate.getTime() + (index * 7 * 24 * 60 * 60 * 1000));
+      let dateString = scheduledDate.toLocaleDateString() + ' ' + scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const row = document.createElement('div');
+      row.className = 'queue-row';
+      row.dataset.id = item.id;
+      row.style.background = '#1a1f35';
+      row.style.padding = '1rem';
+      row.style.borderRadius = '8px';
+      row.style.border = '1px solid #323854';
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.alignItems = 'center';
+      row.style.cursor = 'grab';
+
+      row.innerHTML = `
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <i class="fas fa-bars" style="color: #6366f1; cursor: grab;"></i>
+          <div>
+            <h4 style="margin: 0; color: #f5f7ff; font-size: 1rem;">${item.businessName}</h4>
+            <span style="color: #a7b0ce; font-size: 0.8rem;"><i class="fas fa-map-marker-alt"></i> ${item.businessCity}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <div style="text-align: right; margin-right: 1rem;">
+            <p style="margin: 0; font-size: 0.75rem; color: #8b45ff; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Scheduled For</p>
+            <p style="margin: 0; color: #f5f7ff; font-size: 0.9rem;">${dateString}</p>
+          </div>
+          <button onclick="removeSpotlightQueueItem('${item.id}')" style="background: #e11d48; color: white; border: none; padding: 0.5rem; border-radius: 6px; cursor: pointer;"><i class="fas fa-trash"></i></button>
+        </div>
+      `;
+      listContainer.appendChild(row);
+    });
+
+    queueListEl.appendChild(listContainer);
+
+    // Initialize Sortable
+    if (window.Sortable) {
+      Sortable.create(listContainer, {
+        animation: 150,
+        handle: '.fas.fa-bars',
+        onEnd: async function () {
+          // Send new order to server
+          const rows = listContainer.querySelectorAll('.queue-row');
+          const orderedIds = Array.from(rows).map(r => r.dataset.id);
+
+          try {
+            await fetch('/api/admin/spotlight-queue/reorder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ orderedIds })
+            });
+            // Reload to recalculate dates visually
+            loadSpotlightQueue();
+          } catch (e) {
+            console.error('Failed to save new order:', e);
+          }
+        }
+      });
+    }
+
+  } catch (err) {
+    queueListEl.innerHTML = '<p style="color: #e11d48;">Error loading queue.</p>';
+  }
+}
+
 loadParishes();
