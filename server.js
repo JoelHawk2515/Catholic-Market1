@@ -1280,7 +1280,8 @@ app.post("/api/admin/spotlight", requireAdmin, async (req, res) => {
       title: '⭐ Business Spotlight of the Week!',
       body: `Check out ${business.name}! ${business.description || business.address}`,
       url: `/?spotlight=${business.id}`,
-      businessId: business.id
+      businessId: business.id,
+      imageUrl: business.imageUrl || undefined
     });
 
     let sent = 0;

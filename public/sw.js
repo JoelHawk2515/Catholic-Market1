@@ -1,5 +1,5 @@
 // Service Worker for Catholic Market PWA
-const CACHE_NAME = 'catholic-market-v11';
+const CACHE_NAME = 'catholic-market-v12';
 const STATIC_ASSETS = [
     '/',
     '/style.css',
@@ -88,6 +88,7 @@ self.addEventListener('push', (event) => {
         icon: '/img/icon-192.png',
         badge: '/img/icon-192.png',
         vibrate: [100, 50, 100],
+        image: data.imageUrl || undefined,
         data: {
             url: data.url || '/',
             businessId: data.businessId || null

@@ -515,6 +515,37 @@ async function showMapForBounds(southWest, northEast, label) {
 
     renderBusinesses(businesses, bounds);
     renderParishes(parishes);
+
+    // Spotlight Handle Navigation
+    const urlParams = new URLSearchParams(window.location.search);
+    const spotlightId = urlParams.get('spotlight');
+    if (spotlightId) {
+      const biz = currentBusinesses.find(b => b.id == spotlightId || b._id == spotlightId);
+      if (biz) {
+        const bLat = parseFloat(biz.lat);
+        const bLng = parseFloat(biz.lng);
+        if (!isNaN(bLat) && !isNaN(bLng)) {
+          map.setView([bLat, bLng], 18);
+        }
+
+        urlParams.delete('spotlight');
+        const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+        window.history.replaceState({}, '', newUrl);
+
+        setTimeout(() => {
+          if (window.innerWidth <= 768) {
+            openMobileDetail(biz, null);
+          } else {
+            markersLayer.eachLayer(layer => {
+              if (layer.options && layer.options.businessId == spotlightId) {
+                map.panTo([parseFloat(biz.lat), parseFloat(biz.lng)]);
+                layer.openPopup();
+              }
+            });
+          }
+        }, 300);
+      }
+    }
   } catch (err) {
     console.error(err);
   }
