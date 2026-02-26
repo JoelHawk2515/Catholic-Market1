@@ -165,6 +165,7 @@ businessForm.addEventListener("submit", async (e) => {
         formData.append("parishName", selectedParish && selectedParish.value ? selectedParish.textContent : "");
 
         // Amenities
+        formData.append("isOpen247", document.getElementById("isOpen247").checked);
         formData.append("hasWifi", document.getElementById("hasWifi").checked);
         formData.append("familyFriendly", document.getElementById("familyFriendly").checked);
         formData.append("hasParking", document.getElementById("hasParking").checked);

@@ -219,8 +219,18 @@ if (clearLocalSearch) {
 function getBusinessStatus(schedule) {
   if (!schedule) return null;
 
-  const now = new Date();
+  let hasAnyHours = false;
   const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  for (const day of dayNames) {
+    if (schedule[day] && schedule[day].open && schedule[day].close) {
+      hasAnyHours = true;
+      break;
+    }
+  }
+
+  if (!hasAnyHours) return null;
+
+  const now = new Date();
   const currentDay = dayNames[now.getDay()];
   const currentTime = now.getHours() * 60 + now.getMinutes();
 
@@ -734,7 +744,11 @@ function renderBusinesses(businesses, bounds) {
     }
 
     let hoursDiv = null;
-    if (b.schedule) {
+    if (b.isOpen247) {
+      hoursDiv = document.createElement("div");
+      hoursDiv.className = "business-hours open";
+      hoursDiv.innerHTML = `<i class="fas fa-clock"></i> Open 24/7`;
+    } else if (b.schedule) {
       try {
         const status = getBusinessStatus(b.schedule);
         if (status) {
@@ -819,7 +833,9 @@ function openMobileDetail(b, hoursDiv) {
   const bLng = parseFloat(b.lng);
 
   let hoursHTML = '';
-  if (b.schedule) {
+  if (b.isOpen247) {
+    hoursHTML = `<div class="business-hours open"><i class="fas fa-clock"></i> Open 24/7</div>`;
+  } else if (b.schedule) {
     try {
       const status = getBusinessStatus(b.schedule);
       if (status) {

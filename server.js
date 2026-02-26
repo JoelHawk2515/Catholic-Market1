@@ -188,6 +188,7 @@ app.post("/api/submissions", upload.single('image'), async (req, res) => {
       parishId: req.body.parishId || null,
       parishName: req.body.parishName || null,
       imageUrl: imageUrl,
+      isOpen247: req.body.isOpen247 === 'true',
       hasWifi: req.body.hasWifi === 'true',
       familyFriendly: req.body.familyFriendly === 'true',
       hasParking: req.body.hasParking === 'true',
@@ -267,6 +268,7 @@ app.post("/api/admin/submissions/:id/approve", requireAdmin, async (req, res) =>
       tags: tagsArray,
       parishId: submission.parishId,
       imageUrl: submission.imageUrl,
+      isOpen247: submission.isOpen247 || false,
       hasWifi: submission.hasWifi || false,
       familyFriendly: submission.familyFriendly || false,
       hasParking: submission.hasParking || false,
@@ -480,7 +482,7 @@ app.get("/api/admin/businesses/approved", requireAdmin, async (req, res) => {
 // Admin: Create new business
 app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (req, res) => {
   try {
-    const { name, address, street, city, state, zip, owner, phone, email, website, category, description, verified, hasWifi, familyFriendly, hasParking, schedule } = req.body;
+    const { name, address, street, city, state, zip, owner, phone, email, website, category, description, verified, isOpen247, hasWifi, familyFriendly, hasParking, schedule } = req.body;
 
     if (!name || !address) {
       return res.status(400).json({ error: "Name and address are required" });
@@ -500,6 +502,7 @@ app.post("/api/admin/businesses", requireAdmin, upload.single('image'), async (r
       category: category || 'General',
       description: description || null,
       verified: verified === 'true',
+      isOpen247: isOpen247 === 'true',
       hasWifi: hasWifi === 'true',
       familyFriendly: familyFriendly === 'true',
       hasParking: hasParking === 'true',
@@ -592,7 +595,7 @@ app.post("/api/admin/businesses/:id/sponsor", requireAdmin, async (req, res) => 
 app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, tags, hasWifi, familyFriendly, hasParking, schedule } = req.body;
+    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, tags, isOpen247, hasWifi, familyFriendly, hasParking, schedule } = req.body;
 
     const business = await Business.findByPk(id);
 
@@ -622,6 +625,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
     if (website !== undefined) business.website = website;
     if (category !== undefined) business.category = category;
     if (description !== undefined) business.description = description;
+    if (isOpen247 !== undefined) business.isOpen247 = isOpen247;
     if (hasWifi !== undefined) business.hasWifi = hasWifi;
     if (familyFriendly !== undefined) business.familyFriendly = familyFriendly;
     if (hasParking !== undefined) business.hasParking = hasParking;

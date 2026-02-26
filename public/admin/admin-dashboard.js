@@ -405,6 +405,10 @@ async function editBusiness(id) {
             <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Amenities</label>
             <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1rem;">
               <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
+                <input type="checkbox" name="isOpen247" ${business.isOpen247 ? 'checked' : ''} style="width: 18px; height: 18px;">
+                <i class="fas fa-clock"></i> <span>Open 24/7</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
                 <input type="checkbox" name="hasWifi" ${business.hasWifi ? 'checked' : ''} style="width: 18px; height: 18px;">
                 <i class="fas fa-wifi"></i> <span>Free WiFi</span>
               </label>
@@ -623,6 +627,7 @@ async function editBusiness(id) {
         category: formData.get('category') || null,
         description: formData.get('description') || null,
         tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(t => t.length > 0) : [],
+        isOpen247: formData.get('isOpen247') === 'on',
         hasWifi: formData.get('hasWifi') === 'on',
         familyFriendly: formData.get('familyFriendly') === 'on',
         hasParking: formData.get('hasParking') === 'on',
@@ -1014,6 +1019,10 @@ function showAddBusinessModal() {
           <label style="display: block; margin-bottom: 0.5rem; color: #a7b0ce;">Amenities</label>
           <div class="amenities-checkboxes" style="display: flex; flex-wrap: wrap; gap: 1rem;">
             <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
+              <input type="checkbox" name="isOpen247" style="width: 18px; height: 18px;">
+              <i class="fas fa-clock"></i> <span>Open 24/7</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; color: #a7b0ce; cursor: pointer;">
               <input type="checkbox" name="hasWifi" style="width: 18px; height: 18px;">
               <i class="fas fa-wifi"></i> <span>Free WiFi</span>
             </label>
@@ -1135,6 +1144,7 @@ function showAddBusinessModal() {
 
     // Convert checkboxes to boolean
     formData.set('verified', formData.get('verified') === 'on');
+    formData.set('isOpen247', formData.get('isOpen247') === 'on');
     formData.set('hasWifi', formData.get('hasWifi') === 'on');
     formData.set('familyFriendly', formData.get('familyFriendly') === 'on');
     formData.set('hasParking', formData.get('hasParking') === 'on');

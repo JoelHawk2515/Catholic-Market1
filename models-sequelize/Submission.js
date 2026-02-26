@@ -85,6 +85,10 @@ module.exports = (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    isOpen247: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     hasParking: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
