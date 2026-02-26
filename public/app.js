@@ -470,9 +470,15 @@ async function showMapForBounds(southWest, northEast, label) {
     fill: false
   }).addTo(map);
 
-  // Update sidebar title
+  // Update sidebar title and map overlay
   const sidebarTitle = document.getElementById("sidebarTitle");
-  sidebarTitle.textContent = label === "State Level" ? "All Businesses" : `All Businesses (Map: ${label})`;
+  sidebarTitle.textContent = label === "State Level" ? "All Businesses" : `Local Businesses in ${label}`;
+
+  const mapLabel = document.getElementById("mapLocationLabel");
+  if (mapLabel) {
+    const shortLabel = label === "State Level" ? "All Areas" : label.split(',').slice(0, 2).join(',');
+    mapLabel.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${shortLabel}`;
+  }
 
   // Fetch businesses and parishes
   const minLat = bounds.getSouth();
@@ -820,7 +826,26 @@ function renderBusinesses(businesses, bounds) {
       info.appendChild(directionsBtn);
     }
 
-    card.appendChild(img);
+    // Build the image wrapper
+    const imgWrapper = document.createElement("div");
+    imgWrapper.className = "business-image-wrapper";
+    imgWrapper.appendChild(img);
+
+    // Move verified badge inside image wrapper (positioned absolute)
+    if (b.verified) {
+      const vBadge = card.querySelector('.verified-badge');
+      if (vBadge) imgWrapper.appendChild(vBadge);
+    }
+
+    // Category chip overlay on image
+    if (b.category) {
+      const catChip = document.createElement("span");
+      catChip.className = "card-category-chip";
+      catChip.textContent = b.category;
+      imgWrapper.appendChild(catChip);
+    }
+
+    card.appendChild(imgWrapper);
     card.appendChild(info);
     businessListEl.appendChild(card);
 

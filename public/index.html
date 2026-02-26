@@ -34,7 +34,7 @@
 </head>
 
 <body>
-  <!-- Top Navigation Bar (always visible) -->
+  <!-- Top Navigation Bar -->
   <nav id="top-nav">
     <div class="nav-left">
       <button id="mobileSearchOpenBtn" class="nav-btn mobile-only-btn" title="Search">
@@ -72,29 +72,49 @@
     </div>
   </nav>
 
-  <!-- Main Layout -->
+  <!-- Main Layout — Vertical Stack -->
   <div id="mainLayout">
-    <div id="map"></div>
-    <div id="sidebar">
-      <!-- Sponsored Businesses Panel -->
-      <div id="sponsoredPanel" class="sponsored-panel" style="display: none;">
-        <div class="sponsored-panel-header">
-          <span class="sponsored-label"><i class="fas fa-star"></i> Sponsors</span>
-        </div>
-        <div id="sponsoredGrid" class="sponsored-grid"></div>
+    <!-- Map Hero Section -->
+    <div id="map-hero">
+      <div id="map"></div>
+      <!-- Map overlay info -->
+      <div class="map-overlay-info" id="mapOverlayInfo">
+        <span id="mapLocationLabel"><i class="fas fa-map-marker-alt"></i> Wichita, KS</span>
       </div>
+    </div>
 
-      <h2 id="sidebarTitle">Local Businesses</h2>
-      <div id="filterSection" class="local-search-section">
-        <div class="local-search-wrapper">
-          <i class="fas fa-filter local-search-icon"></i>
-          <input type="text" id="localSearchInput"
-            placeholder="Filter businesses by name, category, tags, or address..." autocomplete="off" />
-          <button type="button" id="clearLocalSearch" class="clear-local-search hidden" title="Clear search"><i
-              class="fas fa-times"></i></button>
+    <!-- Content Area: Filter Sidebar + Card Grid -->
+    <div id="contentArea">
+      <!-- Filter Sidebar -->
+      <aside id="filterSidebar">
+        <!-- Sponsored Panel -->
+        <div id="sponsoredPanel" class="sponsored-panel" style="display: none;">
+          <div class="sponsored-panel-header">
+            <span class="sponsored-label"><i class="fas fa-star"></i> Sponsors</span>
+          </div>
+          <div id="sponsoredGrid" class="sponsored-grid"></div>
         </div>
-      </div>
-      <div id="businessList"></div>
+
+        <!-- Search & Filter -->
+        <div class="filter-section">
+          <h3 class="filter-section-title"><i class="fas fa-filter"></i> Filter</h3>
+          <div class="local-search-wrapper">
+            <i class="fas fa-search local-search-icon"></i>
+            <input type="text" id="localSearchInput" placeholder="Search businesses..." autocomplete="off" />
+            <button type="button" id="clearLocalSearch" class="clear-local-search hidden" title="Clear"><i
+                class="fas fa-times"></i></button>
+          </div>
+        </div>
+
+        <!-- Results count -->
+        <div class="filter-results-count" id="resultsCount"></div>
+      </aside>
+
+      <!-- Business Card Grid -->
+      <main id="cardGrid">
+        <h2 id="sidebarTitle" class="grid-title">Local Businesses</h2>
+        <div id="businessList" class="business-grid"></div>
+      </main>
     </div>
   </div>
 
@@ -112,14 +132,12 @@
           const registration = await navigator.serviceWorker.register('/sw.js');
           console.log('SW registered:', registration.scope);
 
-          // Detect if running as installed PWA (standalone mode)
           const isStandalone = window.matchMedia('(display-mode: standalone)').matches
             || window.navigator.standalone === true;
 
           const notifBtn = document.getElementById('notificationBtn');
 
           if ('Notification' in window) {
-            // Show notification button on Mobile PWA if not already granted
             if (isStandalone && window.innerWidth <= 768 && Notification.permission !== 'granted') {
               if (notifBtn) {
                 notifBtn.style.display = 'inline-flex';
@@ -135,14 +153,11 @@
             }
 
             if (Notification.permission === 'granted') {
-              // Already granted — silently subscribe
               await subscribeToPush(registration);
             } else if (Notification.permission === 'default' && isStandalone) {
-              // Only prompt once per install — track in localStorage
               const hasPrompted = localStorage.getItem('cm_notification_prompted');
               if (!hasPrompted) {
                 localStorage.setItem('cm_notification_prompted', '1');
-                // Small delay so the app loads first before the prompt appears
                 setTimeout(async () => {
                   const permission = await Notification.requestPermission();
                   if (permission === 'granted') {
@@ -161,7 +176,6 @@
 
     async function subscribeToPush(registration) {
       try {
-        // Get VAPID public key from server
         const res = await fetch('/api/push/vapid-key');
         const { publicKey } = await res.json();
 
@@ -170,7 +184,6 @@
           applicationServerKey: urlBase64ToUint8Array(publicKey)
         });
 
-        // Send subscription to server
         await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -198,7 +211,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const spotlightId = urlParams.get('spotlight');
     if (spotlightId) {
-      // Wait for businesses to load, then scroll to and highlight the spotlighted business
       const checkForBusiness = setInterval(() => {
         const card = document.querySelector(`[data-business-id="${spotlightId}"]`);
         if (card) {
@@ -208,7 +220,6 @@
           setTimeout(() => card.classList.remove('spotlight-highlight'), 4000);
         }
       }, 500);
-      // Stop checking after 10 seconds
       setTimeout(() => clearInterval(checkForBusiness), 10000);
     }
   </script>
