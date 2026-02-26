@@ -92,10 +92,10 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-base);
   color: var(--text-primary);
-  overflow-x: hidden;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -184,7 +184,7 @@ body {
 .nav-left {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 #top-nav .logo-small {
@@ -198,8 +198,7 @@ body {
 }
 
 .nav-center {
-  flex: 1;
-  max-width: 560px;
+  flex: 0 1 560px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -284,7 +283,8 @@ body {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  flex-shrink: 0;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .nav-btn {
@@ -364,7 +364,7 @@ body {
 #mainLayout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   padding-top: 64px;
 }
 
@@ -417,6 +417,9 @@ body {
   display: flex;
   flex: 1;
   min-height: 0;
+  width: calc(100% - 2rem);
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 /* ── Filter Sidebar ── */
@@ -1723,6 +1726,8 @@ body {
     flex: 1;
     min-height: 0;
     overflow: hidden;
+    width: calc(100% - 1rem);
+    margin: 0 auto;
   }
 
   #filterSidebar {
