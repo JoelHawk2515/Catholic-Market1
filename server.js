@@ -723,28 +723,17 @@ app.delete("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   }
 });
 
-// API: fetch businesses by bounding box
+// API: fetch all businesses (statewide display)
 app.get("/api/businesses", async (req, res) => {
   try {
-    const minLat = parseFloat(req.query.minLat);
-    const minLng = parseFloat(req.query.minLng);
-    const maxLat = parseFloat(req.query.maxLat);
-    const maxLng = parseFloat(req.query.maxLng);
-
-    if ([minLat, minLng, maxLat, maxLng].some(v => Number.isNaN(v))) {
-      return res.status(400).json({
-        error: "Missing or invalid bbox params. Expected minLat, minLng, maxLat, maxLng as numbers."
-      });
-    }
-
     const businesses = await Business.findAll({
       where: {
-        lat: { [Op.gte]: minLat, [Op.lte]: maxLat },
-        lng: { [Op.gte]: minLng, [Op.lte]: maxLng }
+        lat: { [Op.not]: null },
+        lng: { [Op.not]: null }
       }
     });
 
-    console.log(`Found ${businesses.length} businesses in bounds`);
+    console.log(`Found ${businesses.length} businesses for map`);
 
     // Format for frontend
     const formatted = businesses.map(biz => ({
@@ -762,28 +751,17 @@ app.get("/api/businesses", async (req, res) => {
   }
 });
 
-// API: fetch parishes by bounding box
+// API: fetch all parishes (statewide display)
 app.get("/api/parishes", async (req, res) => {
   try {
-    const minLat = parseFloat(req.query.minLat);
-    const minLng = parseFloat(req.query.minLng);
-    const maxLat = parseFloat(req.query.maxLat);
-    const maxLng = parseFloat(req.query.maxLng);
-
-    if ([minLat, minLng, maxLat, maxLng].some(v => Number.isNaN(v))) {
-      return res.status(400).json({
-        error: "Missing or invalid bbox params. Expected minLat, minLng, maxLat, maxLng as numbers."
-      });
-    }
-
     const parishes = await Parish.findAll({
       where: {
-        lat: { [Op.gte]: minLat, [Op.lte]: maxLat },
-        lng: { [Op.gte]: minLng, [Op.lte]: maxLng }
+        lat: { [Op.not]: null },
+        lng: { [Op.not]: null }
       }
     });
 
-    console.log(`Found ${parishes.length} parishes in bounds`);
+    console.log(`Found ${parishes.length} parishes for map`);
 
     // Format for frontend
     const formatted = parishes.map(parish => ({

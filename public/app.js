@@ -472,7 +472,7 @@ async function showMapForBounds(southWest, northEast, label) {
 
   // Update sidebar title
   const sidebarTitle = document.getElementById("sidebarTitle");
-  sidebarTitle.textContent = `Local Businesses in ${label}`;
+  sidebarTitle.textContent = label === "State Level" ? "All Businesses" : `All Businesses (Map: ${label})`;
 
   // Fetch businesses and parishes
   const minLat = bounds.getSouth();
