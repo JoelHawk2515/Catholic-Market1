@@ -851,7 +851,7 @@ function renderBusinesses(businesses, bounds) {
     }
 
     const desc = document.createElement("p");
-    desc.className = "biz-detail";
+    desc.className = "biz-detail biz-desc";
     if (b.description) desc.textContent = b.description;
 
     let parishBadge = null;
@@ -926,16 +926,20 @@ function renderBusinesses(businesses, bounds) {
     if (website.innerHTML) info.appendChild(website);
     if (email.innerHTML) info.appendChild(email);
     if (desc.textContent) info.appendChild(desc);
-    if (parishBadge) info.appendChild(parishBadge);
-    if (amenitiesDiv) info.appendChild(amenitiesDiv);
-    if (hoursDiv) info.appendChild(hoursDiv);
+
+    const cardFooter = document.createElement("div");
+    cardFooter.className = "biz-card-footer";
+    if (parishBadge) cardFooter.appendChild(parishBadge);
+    if (amenitiesDiv) cardFooter.appendChild(amenitiesDiv);
+    if (hoursDiv) cardFooter.appendChild(hoursDiv);
 
     const bLat = parseFloat(b.lat);
     const bLng = parseFloat(b.lng);
-
     if (!isNaN(bLat) && !isNaN(bLng)) {
-      info.appendChild(directionsBtn);
+      cardFooter.appendChild(directionsBtn);
     }
+
+    info.appendChild(cardFooter);
 
     // Build the image wrapper
     const imgWrapper = document.createElement("div");

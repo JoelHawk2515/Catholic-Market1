@@ -597,8 +597,8 @@ body {
 
 .business-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--sp-5);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-6);
 }
 
 /* ============================================
@@ -839,9 +839,11 @@ body {
 }
 
 .business-info {
-  padding: 0.9rem 1rem;
+  padding: 1.25rem;
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .business-info h3 {
@@ -857,6 +859,29 @@ body {
   font-size: var(--fs-sm);
   color: var(--text-secondary);
   line-height: 1.5;
+}
+
+.biz-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.6rem !important;
+  margin-bottom: 0.8rem !important;
+  opacity: 0.9;
+}
+
+.biz-card-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+  width: 100%;
 }
 
 .business-info a {
@@ -875,7 +900,6 @@ body {
   align-items: center;
   gap: 0.3rem;
   padding: 0.3rem 0.65rem;
-  margin-top: 0.4rem;
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(139, 92, 246, 0.12));
   border: 1px solid rgba(167, 139, 250, 0.25);
@@ -889,7 +913,6 @@ body {
 }
 
 .directions-btn {
-  margin-top: 0.5rem;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-full);
   border: none;
@@ -938,8 +961,6 @@ body {
 .amenities-icons {
   display: flex;
   gap: 0.6rem;
-  margin-top: 0.6rem;
-  padding: 0.4rem 0;
   flex-wrap: wrap;
 }
 
