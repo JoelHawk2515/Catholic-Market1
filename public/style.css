@@ -92,12 +92,17 @@
 
 body {
   margin: 0;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--bg-base);
   color: var(--text-primary);
-  overflow: hidden;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body.home-body {
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── Utility Classes ── */
