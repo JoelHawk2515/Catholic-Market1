@@ -2048,7 +2048,10 @@ body.home-body {
   }
 
   .business-image {
-    height: 80px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    /*height: 80px;*/
   }
 }
 
