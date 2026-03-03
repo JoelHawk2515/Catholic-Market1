@@ -58,21 +58,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadSponsoredBusinesses();
 
   // Try to detect user location in the background (for "My Location" button)
+  // Requesting location is throttled to once every 30 days so as not to pester users,
+  // unless they have already granted the permission.
   if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        userLocation = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        };
-        // Show a subtle indicator that location is available
-        myLocationBtn.classList.add("location-available");
-      },
-      (err) => {
-        console.warn("Geolocation error:", err);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    const fetchLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          };
+          myLocationBtn.classList.add("location-available");
+        },
+        (err) => console.warn("Geolocation error:", err),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    };
+
+    const attemptLocationFetch = () => {
+      const lastPrompt = localStorage.getItem("lastLocationPromptTime");
+      const now = Date.now();
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+      if (!lastPrompt || (now - parseInt(lastPrompt)) > thirtyDays) {
+        localStorage.setItem("lastLocationPromptTime", now.toString());
+        fetchLocation();
+      }
+    };
+
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'granted') {
+          fetchLocation();
+        } else if (result.state === 'prompt') {
+          attemptLocationFetch();
+        }
+      }).catch(() => attemptLocationFetch());
+    } else {
+      attemptLocationFetch();
+    }
   }
 
   // Auto-load the default location (Wichita, KS)
@@ -399,6 +423,7 @@ myLocationBtn.addEventListener("click", async () => {
   if (!userLocation) {
     // Try to get location now
     if ("geolocation" in navigator) {
+      localStorage.setItem("lastLocationPromptTime", Date.now().toString());
       myLocationBtn.classList.add("loading");
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
