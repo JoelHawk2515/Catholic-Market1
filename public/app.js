@@ -889,9 +889,11 @@ function renderBusinesses(businesses, bounds) {
 
     let parishBadge = null;
     if (b.parishId && parishesData[b.parishId]) {
+      const pData = parishesData[b.parishId];
+      const displayName = pData.city ? `${pData.name} - ${pData.city}` : pData.name;
       parishBadge = document.createElement("div");
       parishBadge.className = "parish-badge biz-detail";
-      parishBadge.innerHTML = `<span class="church-icon">⛪</span><span>${parishesData[b.parishId].name}</span>`;
+      parishBadge.innerHTML = `<span class="church-icon">⛪</span><span>${displayName}</span>`;
     }
 
     let amenitiesDiv = null;
@@ -1068,7 +1070,9 @@ function openMobileDetail(b, hoursDiv) {
 
   let parishHTML = '';
   if (b.parishId && parishesData[b.parishId]) {
-    parishHTML = `<div class="parish-badge"><span class="church-icon">⛪</span><span>${parishesData[b.parishId].name}</span></div>`;
+    const pData = parishesData[b.parishId];
+    const displayName = pData.city ? `${pData.name} - ${pData.city}` : pData.name;
+    parishHTML = `<div class="parish-badge"><span class="church-icon">⛪</span><span>${displayName}</span></div>`;
   }
 
   panel.innerHTML = `

@@ -398,11 +398,13 @@ async function editBusiness(id) {
 
           <div class="form-group">
             <label>Parish Affiliation</label>
-            <select name="parishId" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem; font-size: 1rem; color-scheme: dark;">
+            <input type="text" id="parishSearchFilter" placeholder="Search parishes..." style="margin-bottom: 0.5rem; width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.5rem; font-size: 0.9rem;">
+            <select name="parishId" id="parishSelect" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem; font-size: 1rem; color-scheme: dark;">
               <option value="">None</option>
               ${parishes.map(p => {
       const pId = p.id || p._id;
-      return `<option value="${pId}" ${business.parishId === pId ? 'selected' : ''}>${p.name}</option>`;
+      const displayName = p.city ? `${p.name} - ${p.city}` : p.name;
+      return `<option value="${pId}" ${business.parishId === pId ? 'selected' : ''}>${displayName}</option>`;
     }).join('')}
             </select>
           </div>
@@ -496,6 +498,20 @@ async function editBusiness(id) {
     const editPreviewImg = document.getElementById('editPreviewImg');
     const editImageName = document.getElementById('editImageName');
     const editRemoveImageBtn = document.getElementById('editRemoveImageBtn');
+
+    // Parish search filter handling
+    const parishSearch = document.getElementById('parishSearchFilter');
+    const parishSelect = document.getElementById('parishSelect');
+    if (parishSearch && parishSelect) {
+      parishSearch.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        Array.from(parishSelect.options).forEach(opt => {
+          if (opt.value === "") return; // Skip "None"
+          const match = opt.text.toLowerCase().includes(term);
+          opt.style.display = match ? '' : 'none';
+        });
+      });
+    }
 
     editImageInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
