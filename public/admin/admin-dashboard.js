@@ -296,8 +296,13 @@ async function toggleSponsored(id, setSponsored) {
 async function editBusiness(id) {
   // Get current business data
   try {
-    const res = await fetch('/api/admin/businesses/approved');
-    const businesses = await res.json();
+    const [bizRes, parishRes] = await Promise.all([
+      fetch('/api/admin/businesses/approved'),
+      fetch('/api/admin/parishes')
+    ]);
+    const businesses = await bizRes.json();
+    const parishes = await parishRes.json();
+
     const business = businesses.find(b => b.id === id || b._id === id);
 
     if (!business) {
@@ -389,6 +394,17 @@ async function editBusiness(id) {
           <div class="form-group">
             <label>Website</label>
             <input type="url" name="website" value="${business.website || ''}">
+          </div>
+
+          <div class="form-group">
+            <label>Parish Affiliation</label>
+            <select name="parishId" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(12, 14, 20, 0.9); color: var(--text-primary); padding: 0.75rem; font-size: 1rem; color-scheme: dark;">
+              <option value="">None</option>
+              ${parishes.map(p => {
+      const pId = p.id || p._id;
+      return `<option value="${pId}" ${business.parishId === pId ? 'selected' : ''}>${p.name}</option>`;
+    }).join('')}
+            </select>
           </div>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -632,6 +648,7 @@ async function editBusiness(id) {
         email: formData.get('email') || null,
         website: formData.get('website') || null,
         category: formData.get('category') || null,
+        parishId: formData.get('parishId') || null,
         description: formData.get('description') || null,
         tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(t => t.length > 0) : [],
         isOpen247: formData.get('isOpen247') === 'on',
