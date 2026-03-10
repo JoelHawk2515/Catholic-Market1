@@ -771,11 +771,11 @@ function renderParishes(parishes) {
   if (!parishes || parishes.length === 0) return;
 
   const churchIcon = L.divIcon({
-    html: '<div style="font-size: 28px; color: #8b45ff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-cross"></i></div>',
+    html: '<div style="font-size: 14px; color: #8b45ff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-cross"></i></div>',
     className: 'custom-church-icon',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14]
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -7]
   });
 
   parishes.forEach((p) => {
@@ -798,16 +798,22 @@ function renderParishes(parishes) {
 // BUSINESS RENDERING
 // ==========================================
 
+function getCategoryColor(category) {
+  if (!category) return '#3b82f6'; // Default true blue
+  const colors = [
+    '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+    '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+    '#3b82f6', '#6366f1', '#a855f7', '#d946ef', '#ec4899', '#f43f5e'
+  ];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
 function renderBusinesses(businesses, bounds) {
   console.log('renderBusinesses called with:', businesses.length, 'businesses');
-
-  const businessIcon = L.divIcon({
-    html: '<div style="font-size: 28px; color: #3b82f6; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-location-dot"></i></div>',
-    className: 'custom-business-icon',
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-    popupAnchor: [0, -28]
-  });
 
   businessListEl.innerHTML = "";
 
@@ -992,7 +998,16 @@ function renderBusinesses(businesses, bounds) {
     businessListEl.appendChild(card);
 
     if (!isNaN(bLat) && !isNaN(bLng)) {
-      const marker = L.marker([bLat, bLng], { icon: businessIcon, businessId: b.id }).addTo(markersLayer);
+      const markerColor = getCategoryColor(b.category);
+      const categoryIcon = L.divIcon({
+        html: `<div style="font-size: 28px; color: ${markerColor}; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-location-dot"></i></div>`,
+        className: 'custom-business-icon',
+        iconSize: [28, 28],
+        iconAnchor: [14, 28],
+        popupAnchor: [0, -28]
+      });
+
+      const marker = L.marker([bLat, bLng], { icon: categoryIcon, businessId: b.id }).addTo(markersLayer);
       marker.bindPopup(
         `<strong>${b.name}</strong><br>${b.address || ""}${b.website
           ? `<br><a href="${b.website}" target="_blank">Website</a>`
