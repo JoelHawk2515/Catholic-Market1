@@ -770,11 +770,12 @@ function renderParishes(parishes) {
 
   if (!parishes || parishes.length === 0) return;
 
-  const churchIcon = L.icon({
-    iconUrl: '/img/church-icon.webp',
-    iconSize: [38, 38],
-    iconAnchor: [19, 38],
-    popupAnchor: [0, -38]
+  const churchIcon = L.divIcon({
+    html: '<div style="font-size: 28px; color: #8b45ff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-cross"></i></div>',
+    className: 'custom-church-icon',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14]
   });
 
   parishes.forEach((p) => {
@@ -800,11 +801,12 @@ function renderParishes(parishes) {
 function renderBusinesses(businesses, bounds) {
   console.log('renderBusinesses called with:', businesses.length, 'businesses');
 
-  const businessIcon = L.icon({
-    iconUrl: businessIconUrl,
-    iconSize: [46, 46],
-    iconAnchor: [23, 46],
-    popupAnchor: [0, -46]
+  const businessIcon = L.divIcon({
+    html: '<div style="font-size: 28px; color: #3b82f6; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-location-dot"></i></div>',
+    className: 'custom-business-icon',
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -28]
   });
 
   businessListEl.innerHTML = "";
