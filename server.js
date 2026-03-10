@@ -596,7 +596,7 @@ app.post("/api/admin/businesses/:id/sponsor", requireAdmin, async (req, res) => 
 app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, description, tags, isOpen247, hasWifi, familyFriendly, hasParking, schedule } = req.body;
+    const { name, address, street, city, state, zip, lat, lng, owner, phone, email, website, category, parishId, description, tags, isOpen247, hasWifi, familyFriendly, hasParking, schedule } = req.body;
 
     const business = await Business.findByPk(id);
 
@@ -625,6 +625,7 @@ app.patch("/api/admin/businesses/:id", requireAdmin, async (req, res) => {
     if (email !== undefined) business.email = email;
     if (website !== undefined) business.website = website;
     if (category !== undefined) business.category = category;
+    if (parishId !== undefined) business.parishId = parishId === "" ? null : parishId;
     if (description !== undefined) business.description = description;
     if (isOpen247 !== undefined) business.isOpen247 = isOpen247;
     if (hasWifi !== undefined) business.hasWifi = hasWifi;
