@@ -367,33 +367,59 @@ app.post("/api/admin/bulk-upload", requireAdmin, async (req, res) => {
       }
 
       try {
-        // Convert tags from semicolons to comma-separated
-        let tagsStr = '';
-        if (b.tags) {
-          tagsStr = b.tags.split(';').map(t => t.trim()).filter(Boolean).join(', ');
-        }
+        // Convert tags from semicolons to array
+        const tagsArray = b.tags
+          ? b.tags.split(';').map(t => t.trim()).filter(Boolean)
+          : [];
 
-        await Submission.create({
+        let lat = b.lat ? parseFloat(b.lat) : null;
+        let lng = b.lng ? parseFloat(b.lng) : null;
+
+        const business = await Business.create({
           name: b.name,
           address: b.address,
           street: b.street || null,
           city: b.city || null,
           state: b.state || null,
           zip: b.zip || null,
+          lat,
+          lng,
           owner: b.owner || null,
           phone: b.phone || null,
           email: b.email || null,
           website: b.website || null,
           category: b.category || null,
           description: b.description || null,
-          tags: tagsStr,
+          tags: tagsArray,
           hasWifi: String(b.hasWifi).toLowerCase() === 'true',
           familyFriendly: String(b.familyFriendly).toLowerCase() === 'true',
           hasParking: String(b.hasParking).toLowerCase() === 'true',
           imageUrl: null,
           schedule: null,
-          status: 'pending'
+          verified: true
         });
+
+        // Geocode if lat/lng not provided
+        if (!lat || !lng) {
+          try {
+            const parts = [b.address];
+            if (b.city) parts.push(b.city);
+            if (b.state) parts.push(b.state);
+            if (b.zip) parts.push(b.zip);
+            const coords = await geocodeAddress(parts.join(', '));
+            if (coords) {
+              business.lat = coords.lat;
+              business.lng = coords.lng;
+              if (coords.street) business.street = coords.street;
+              if (coords.city) business.city = coords.city;
+              if (coords.state) business.state = coords.state;
+              if (coords.zip) business.zip = coords.zip;
+              await business.save();
+            }
+          } catch (geocodeErr) {
+            console.error(`Failed to geocode row ${i + 1}:`, geocodeErr.message);
+          }
+        }
 
         created++;
       } catch (err) {

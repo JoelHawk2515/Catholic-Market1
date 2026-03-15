@@ -9,15 +9,16 @@ const CONFIGS = {
         allFields: [
             'name', 'address', 'street', 'city', 'state', 'zip',
             'owner', 'phone', 'email', 'website', 'category',
-            'description', 'tags', 'hasWifi', 'familyFriendly', 'hasParking'
+            'description', 'tags', 'hasWifi', 'familyFriendly', 'hasParking',
+            'lat', 'lng'
         ],
         requiredFields: ['name', 'address', 'city'],
         endpoint: '/api/admin/bulk-upload',
         bodyKey: 'businesses',
         templateFilename: 'catholic-market-business-template.csv',
         templateSample: [
-            ["St. Joseph's Coffee", "123 Main St, Wichita, KS 67202", "123 Main St", "Wichita", "KS", "67202", "John Doe", "(316) 555-0100", "info@sjcoffee.com", "https://sjcoffee.com", "Coffee Shop", "Parish coffee house", "coffee;food", "true", "true", "true"],
-            ["Mary's Flowers", "789 Elm St, Wichita, KS 67203", "789 Elm St", "Wichita", "KS", "67203", "Mary Smith", "(316) 555-0200", "mary@flowers.com", "https://marysflowers.com", "Florist", "Beautiful arrangements", "flowers;gifts", "false", "true", "true"]
+            ["St. Joseph's Coffee", "123 Main St, Wichita, KS 67202", "123 Main St", "Wichita", "KS", "67202", "John Doe", "(316) 555-0100", "info@sjcoffee.com", "https://sjcoffee.com", "Coffee Shop", "Parish coffee house", "coffee;food", "true", "true", "true", "37.6922", "-97.3364"],
+            ["Mary's Flowers", "789 Elm St, Wichita, KS 67203", "789 Elm St", "Wichita", "KS", "67203", "Mary Smith", "(316) 555-0200", "mary@flowers.com", "https://marysflowers.com", "Florist", "Beautiful arrangements", "flowers;gifts", "false", "true", "true", "", ""]
         ]
     },
     parish: {
