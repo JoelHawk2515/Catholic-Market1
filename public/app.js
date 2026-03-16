@@ -71,10 +71,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             lng: pos.coords.longitude
           };
           myLocationBtn.classList.add("location-available");
-          placeUserLocationDot();
+          // Don't auto-place the dot here — only show it when the user
+          // explicitly clicks "My Location" to avoid showing an inaccurate
+          // IP-based position (e.g. ISP routing through a distant state).
         },
         (err) => console.warn("Geolocation error:", err),
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     };
 
@@ -443,7 +445,7 @@ myLocationBtn.addEventListener("click", async () => {
           myLocationBtn.classList.remove("loading");
           alert("Could not access your location. Please search by city/state/zip instead.");
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       alert("Geolocation not supported. Please use the search box.");
@@ -580,7 +582,6 @@ async function showMapForBounds(southWest, northEast, label) {
     }).addTo(map);
 
     markersLayer = L.layerGroup().addTo(map);
-    placeUserLocationDot(); // show dot if location was already known
   }
 
   const bounds = L.latLngBounds(southWest, northEast);
