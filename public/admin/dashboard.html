@@ -357,6 +357,84 @@
         align-items: stretch;
       }
     }
+
+    /* ── Admin Filter Bar ── */
+    .admin-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .filter-search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted, #6b7394);
+      font-size: 0.8rem;
+      pointer-events: none;
+    }
+
+    .filter-search-input {
+      width: 100%;
+      padding: 0.55rem 0.75rem 0.55rem 2.1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, #252938);
+      background: var(--bg-surface, #14161e);
+      color: var(--text-primary, #eef0f6);
+      font-size: 0.875rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+
+    .filter-search-input:focus {
+      border-color: #5b8def;
+    }
+
+    .filter-select {
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, #252938);
+      background: var(--bg-surface, #14161e);
+      color: var(--text-primary, #eef0f6);
+      font-size: 0.875rem;
+      outline: none;
+      cursor: pointer;
+      color-scheme: dark;
+      transition: border-color 0.15s;
+    }
+
+    .filter-select:focus {
+      border-color: #5b8def;
+    }
+
+    .filter-count {
+      font-size: 0.8rem;
+      color: var(--text-muted, #6b7394);
+      white-space: nowrap;
+      padding: 0 0.25rem;
+    }
+
+    @media (max-width: 600px) {
+      .admin-filter-bar {
+        gap: 0.5rem;
+      }
+      .filter-search-wrap {
+        min-width: 100%;
+      }
+      .filter-select {
+        flex: 1;
+      }
+    }
   </style>
 </head>
 
@@ -457,6 +535,22 @@
         </button>
       </div>
       <p class="admin-main-subtitle">Manage approved business listings</p>
+      <!-- Business Filters -->
+      <div class="admin-filter-bar" id="businessFilterBar">
+        <div class="filter-search-wrap">
+          <i class="fas fa-search filter-search-icon"></i>
+          <input type="text" id="bizSearchInput" class="filter-search-input" placeholder="Search name, city, owner, category…" />
+        </div>
+        <select id="bizCategoryFilter" class="filter-select">
+          <option value="">All Categories</option>
+        </select>
+        <select id="bizVerifiedFilter" class="filter-select">
+          <option value="">All</option>
+          <option value="verified">Verified</option>
+          <option value="unverified">Unverified</option>
+        </select>
+        <span id="bizFilterCount" class="filter-count"></span>
+      </div>
       <div id="approvedList" class="admin-approved-list"></div>
     </div>
 
@@ -468,6 +562,17 @@
         </button>
       </div>
       <p class="admin-main-subtitle">Manage parish listings</p>
+      <!-- Parish Filters -->
+      <div class="admin-filter-bar" id="parishFilterBar">
+        <div class="filter-search-wrap">
+          <i class="fas fa-search filter-search-icon"></i>
+          <input type="text" id="parishSearchInput" class="filter-search-input" placeholder="Search name or city…" />
+        </div>
+        <select id="parishStateFilter" class="filter-select">
+          <option value="">All States</option>
+        </select>
+        <span id="parishFilterCount" class="filter-count"></span>
+      </div>
       <div id="parishesList" class="admin-parishes-list"></div>
     </div>
 

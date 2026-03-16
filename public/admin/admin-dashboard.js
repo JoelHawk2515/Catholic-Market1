@@ -89,6 +89,15 @@ logoutBtn.addEventListener("click", async () => {
   window.location.href = "/admin/login.html";
 });
 
+// Business filter listeners
+document.getElementById('bizSearchInput')?.addEventListener('input', renderBusinesses);
+document.getElementById('bizCategoryFilter')?.addEventListener('change', renderBusinesses);
+document.getElementById('bizVerifiedFilter')?.addEventListener('change', renderBusinesses);
+
+// Parish filter listeners
+document.getElementById('parishSearchInput')?.addEventListener('input', renderParishes);
+document.getElementById('parishStateFilter')?.addEventListener('change', renderParishes);
+
 // Load pending submissions
 async function loadPending() {
   try {
@@ -111,25 +120,62 @@ async function loadPending() {
   }
 }
 
+// In-memory stores for filtering
+let allBusinesses = [];
+let allParishes = [];
+
 // Load approved businesses
 async function loadApproved() {
   try {
     const res = await fetch("/api/admin/businesses/approved");
     const businesses = await res.json();
-
-    if (businesses.length === 0) {
-      approvedList.innerHTML = '<p style="color: #a7b0ce;">No approved businesses yet</p>';
-      return;
-    }
-
-    approvedList.innerHTML = "";
-    businesses.forEach(biz => {
-      const card = createApprovedCard(biz);
-      approvedList.appendChild(card);
-    });
+    allBusinesses = businesses;
+    populateBizCategoryFilter();
+    renderBusinesses();
   } catch (err) {
     console.error(err);
   }
+}
+
+function populateBizCategoryFilter() {
+  const select = document.getElementById('bizCategoryFilter');
+  if (!select) return;
+  const current = select.value;
+  const categories = [...new Set(allBusinesses.map(b => b.category).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">All Categories</option>' +
+    categories.map(c => `<option value="${c}"${c === current ? ' selected' : ''}>${c}</option>`).join('');
+}
+
+function renderBusinesses() {
+  const search = (document.getElementById('bizSearchInput')?.value || '').toLowerCase();
+  const category = document.getElementById('bizCategoryFilter')?.value || '';
+  const verified = document.getElementById('bizVerifiedFilter')?.value || '';
+
+  const filtered = allBusinesses.filter(biz => {
+    if (search) {
+      const haystack = [biz.name, biz.city, biz.owner, biz.category, biz.address].join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    if (category && biz.category !== category) return false;
+    if (verified === 'verified' && !biz.verified) return false;
+    if (verified === 'unverified' && biz.verified) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('bizFilterCount');
+  if (countEl) {
+    countEl.textContent = filtered.length === allBusinesses.length
+      ? `${allBusinesses.length} businesses`
+      : `${filtered.length} of ${allBusinesses.length}`;
+  }
+
+  if (filtered.length === 0) {
+    approvedList.innerHTML = '<p style="color: #a7b0ce;">No businesses match your filters</p>';
+    return;
+  }
+
+  approvedList.innerHTML = "";
+  filtered.forEach(biz => approvedList.appendChild(createApprovedCard(biz)));
 }
 
 function createSubmissionCard(sub) {
@@ -767,20 +813,50 @@ async function loadParishes() {
   try {
     const res = await fetch("/api/admin/parishes");
     const parishes = await res.json();
-
-    if (parishes.length === 0) {
-      parishesList.innerHTML = '<p style="color: #a7b0ce;">No parishes yet</p>';
-      return;
-    }
-
-    parishesList.innerHTML = "";
-    parishes.forEach(parish => {
-      const card = createParishCard(parish);
-      parishesList.appendChild(card);
-    });
+    allParishes = parishes;
+    populateParishStateFilter();
+    renderParishes();
   } catch (err) {
     console.error(err);
   }
+}
+
+function populateParishStateFilter() {
+  const select = document.getElementById('parishStateFilter');
+  if (!select) return;
+  const current = select.value;
+  const states = [...new Set(allParishes.map(p => p.state).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">All States</option>' +
+    states.map(s => `<option value="${s}"${s === current ? ' selected' : ''}>${s}</option>`).join('');
+}
+
+function renderParishes() {
+  const search = (document.getElementById('parishSearchInput')?.value || '').toLowerCase();
+  const state = document.getElementById('parishStateFilter')?.value || '';
+
+  const filtered = allParishes.filter(parish => {
+    if (search) {
+      const haystack = [parish.name, parish.city, parish.address].join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    if (state && parish.state !== state) return false;
+    return true;
+  });
+
+  const countEl = document.getElementById('parishFilterCount');
+  if (countEl) {
+    countEl.textContent = filtered.length === allParishes.length
+      ? `${allParishes.length} parishes`
+      : `${filtered.length} of ${allParishes.length}`;
+  }
+
+  if (filtered.length === 0) {
+    parishesList.innerHTML = '<p style="color: #a7b0ce;">No parishes match your filters</p>';
+    return;
+  }
+
+  parishesList.innerHTML = "";
+  filtered.forEach(parish => parishesList.appendChild(createParishCard(parish)));
 }
 
 function createParishCard(parish) {
@@ -1547,25 +1623,15 @@ async function initDashboard() {
       });
     }
 
-    // Render approved businesses
-    if (approvedData.length === 0) {
-      approvedList.innerHTML = '<p style="color: var(--text-secondary, #9ba3c0);">No approved businesses yet</p>';
-    } else {
-      approvedList.innerHTML = "";
-      approvedData.forEach(biz => {
-        approvedList.appendChild(createApprovedCard(biz));
-      });
-    }
+    // Render approved businesses (via filter store)
+    allBusinesses = approvedData;
+    populateBizCategoryFilter();
+    renderBusinesses();
 
-    // Render parishes
-    if (parishesData.length === 0) {
-      parishesList.innerHTML = '<p style="color: var(--text-secondary, #9ba3c0);">No parishes yet</p>';
-    } else {
-      parishesList.innerHTML = "";
-      parishesData.forEach(parish => {
-        parishesList.appendChild(createParishCard(parish));
-      });
-    }
+    // Render parishes (via filter store)
+    allParishes = parishesData;
+    populateParishStateFilter();
+    renderParishes();
 
     // Load spotlight queue separately (has its own complex rendering)
     let spotlightCount = 0;
