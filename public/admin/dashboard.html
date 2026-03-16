@@ -627,18 +627,23 @@
   <script>
     // Tab switching for sidebar nav
     function switchTab(tabName) {
-      // Hide all tab contents
       document.querySelectorAll('.admin-tab-content').forEach(tc => tc.classList.remove('active'));
-      // Show target
       const target = document.getElementById(tabName + 'Tab');
       if (target) target.classList.add('active');
-      // Update sidebar active state
       document.querySelectorAll('.sidebar-nav-item').forEach(item => {
         item.classList.remove('active');
         if (item.dataset.tab === tabName) item.classList.add('active');
       });
-      // Close mobile sidebar
       document.querySelector('.admin-sidebar').classList.remove('open');
+      history.replaceState(null, '', '#' + tabName);
+    }
+    // Deep-link support: open tab from URL hash (e.g. dashboard.html#businesses)
+    const _hash = window.location.hash.replace('#', '');
+    if (_hash === 'map') {
+      // Trigger Map Coordinates after JS loads
+      window.addEventListener('load', () => document.getElementById('mapCoordinatesBtn')?.click());
+    } else if (_hash && document.getElementById(_hash + 'Tab')) {
+      switchTab(_hash);
     }
   </script>
   <script src="/admin/admin-dashboard.js"></script>

@@ -13,27 +13,181 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/admin/bulk-upload.css" />
+    <style>
+        /* ── Admin Sidebar Layout (shared with dashboard) ── */
+        body.admin-body {
+            background: var(--bg-base, #0c0e14);
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            color: var(--text-primary, #eef0f6);
+            overflow-y: auto;
+            height: auto;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: var(--bg-surface, #14161e);
+            border-right: 1px solid var(--border, #252938);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .admin-sidebar-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border, #252938);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-sidebar-header img { height: 32px; filter: brightness(1.15); }
+        .admin-sidebar-header span { color: var(--text-secondary, #9ba3c0); font-size: 0.85rem; font-weight: 600; }
+
+        .admin-sidebar-nav { flex: 1; padding: 0.75rem 0; overflow-y: auto; }
+
+        .sidebar-nav-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted, #6b7394);
+            padding: 1rem 1.5rem 0.5rem;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1.5rem;
+            color: var(--text-secondary, #9ba3c0);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav-item:hover { background: rgba(91, 141, 239, 0.06); color: var(--text-primary, #eef0f6); }
+        .sidebar-nav-item.active { background: rgba(91, 141, 239, 0.08); color: #5b8def; border-left-color: #5b8def; }
+        .sidebar-nav-item i { width: 20px; text-align: center; font-size: 0.9rem; }
+
+        .sidebar-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border, #252938); }
+        .sidebar-footer button {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-light, #2e3348);
+            background: transparent;
+            color: var(--text-secondary, #9ba3c0);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .sidebar-footer button:hover { background: rgba(248, 113, 113, 0.08); border-color: rgba(248, 113, 113, 0.3); color: #f87171; }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem 2.5rem;
+            max-width: 1200px;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-surface, #14161e);
+            border: 1px solid var(--border, #252938);
+            color: var(--text-primary, #eef0f6);
+            font-size: 1.1rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .admin-sidebar { transform: translateX(-100%); }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 4rem 1rem 2rem; }
+            .admin-sidebar-toggle { display: flex; }
+        }
+    </style>
 </head>
 
-<body style="background: #05070b; padding: 0; overflow-y: auto; height: auto;">
-    <!-- Nav -->
-    <nav id="top-nav" style="position: relative;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <a href="/admin/dashboard.html"
-                style="text-decoration:none; display:flex; align-items:center; gap:0.6rem; color:#a7b0ce;">
-                <i class="fas fa-arrow-left"></i>
-                <img src="/img/logo.png" alt="Logo" class="logo-small" />
-            </a>
-            <span style="color: #a7b0ce; font-size: 0.9rem;">Bulk Upload</span>
-        </div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
-            <a href="/admin/dashboard.html" class="btn-refresh"
-                style="font-size: 0.85rem; padding: 0.5rem 1rem; text-decoration:none;">← Dashboard</a>
-            <button id="logoutBtn" style="background: #272b3a;">Logout</button>
-        </div>
-    </nav>
+<body class="admin-body">
+    <!-- Mobile Sidebar Toggle -->
+    <button class="admin-sidebar-toggle" id="sidebarToggle"
+        onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">
+        <i class="fas fa-bars"></i>
+    </button>
 
-    <div class="page-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-sidebar-header">
+            <img src="/img/logo.png" alt="Logo" />
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="admin-sidebar-nav">
+            <div class="sidebar-nav-label">Management</div>
+            <a class="sidebar-nav-item" href="/admin/dashboard.html#pending">
+                <i class="fas fa-clock"></i> Pending Reviews
+            </a>
+            <a class="sidebar-nav-item" href="/admin/dashboard.html#businesses">
+                <i class="fas fa-store"></i> Businesses
+            </a>
+            <a class="sidebar-nav-item" href="/admin/dashboard.html#parishes">
+                <i class="fas fa-church"></i> Parishes
+            </a>
+            <a class="sidebar-nav-item" href="/admin/dashboard.html#spotlight">
+                <i class="fas fa-star"></i> Spotlight Queue
+            </a>
+
+            <div class="sidebar-nav-label">Tools</div>
+            <a class="sidebar-nav-item active" href="/admin/bulk-upload.html">
+                <i class="fas fa-file-import"></i> Bulk Upload
+            </a>
+            <a class="sidebar-nav-item" href="/admin/analytics.html">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a class="sidebar-nav-item" href="/admin/dashboard.html#map">
+                <i class="fas fa-map"></i> Map Coordinates
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
         <!-- Header -->
         <div class="page-header">
             <div class="header-icon"><i class="fas fa-file-csv"></i></div>
@@ -325,7 +479,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script src="/admin/bulk-upload.js"></script>
 </body>
