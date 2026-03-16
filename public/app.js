@@ -438,7 +438,6 @@ myLocationBtn.addEventListener("click", async () => {
           };
           myLocationBtn.classList.remove("loading");
           myLocationBtn.classList.add("location-available");
-          placeUserLocationDot();
           await goToUserLocation();
         },
         (err) => {
@@ -485,11 +484,15 @@ async function goToUserLocation() {
       east = userLocation.lng + delta;
     }
 
-    showMapForBounds(
+    await showMapForBounds(
       [south, west],
       [north, east],
       displayName || "Your local area"
     );
+
+    // Re-place the blue dot after the map is rebuilt
+    userLocationMarker = null; // reset stale reference
+    placeUserLocationDot();
   } catch (err) {
     console.error(err);
     alert("Error determining city from your location. Try searching manually.");
