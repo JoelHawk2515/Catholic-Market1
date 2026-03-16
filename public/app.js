@@ -6,6 +6,7 @@ let dwellTimer = null; // { businessId, businessName, openedAt }
 let boundsRect = null;
 let markersLayer = null;
 let userLocationMarker = null;
+let userLocationAccurate = false; // true only if accuracy < 25km (GPS/WiFi, not IP-based)
 
 // Default location: Wichita, KS
 const DEFAULT_LOCATION = { name: "Wichita, KS", lat: 37.6872, lng: -97.3301 };
@@ -66,14 +67,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const fetchLocation = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          const accuracy = pos.coords.accuracy; // meters
+          userLocationAccurate = accuracy < 25000; // < 25km = GPS/WiFi (reliable)
           userLocation = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude
           };
           myLocationBtn.classList.add("location-available");
-          // Don't auto-place the dot here — only show it when the user
-          // explicitly clicks "My Location" to avoid showing an inaccurate
-          // IP-based position (e.g. ISP routing through a distant state).
+          console.log(`Geolocation accuracy: ${accuracy}m — ${userLocationAccurate ? 'GPS/WiFi (reliable)' : 'IP-based (unreliable)'}`);
         },
         (err) => console.warn("Geolocation error:", err),
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -432,12 +433,18 @@ myLocationBtn.addEventListener("click", async () => {
       myLocationBtn.classList.add("loading");
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
+          const accuracy = pos.coords.accuracy;
+          userLocationAccurate = accuracy < 25000;
           userLocation = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude
           };
           myLocationBtn.classList.remove("loading");
           myLocationBtn.classList.add("location-available");
+          console.log(`Geolocation accuracy: ${accuracy}m — ${userLocationAccurate ? 'GPS/WiFi (reliable)' : 'IP-based (unreliable)'}`);
+          if (!userLocationAccurate) {
+            alert("Your browser returned an approximate location (based on IP address, not GPS). The blue dot may be inaccurate on desktop computers.\n\nFor precise location, use this site on your phone, or search for your city using the search bar.");
+          }
           await goToUserLocation();
         },
         (err) => {
@@ -505,6 +512,15 @@ async function goToUserLocation() {
 
 function placeUserLocationDot() {
   if (!map || !userLocation) return;
+
+  // Don't show the dot if the location is IP-based (inaccurate)
+  if (!userLocationAccurate) {
+    if (userLocationMarker) {
+      map.removeLayer(userLocationMarker);
+      userLocationMarker = null;
+    }
+    return;
+  }
 
   const icon = L.divIcon({
     className: '',
