@@ -1154,6 +1154,13 @@ app.post("/api/analytics/track", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Verify the business still exists before inserting (prevents FK constraint errors
+    // when a business is deleted but a client still has a stale cached ID)
+    const exists = await Business.findByPk(businessId, { attributes: ['id'] });
+    if (!exists) {
+      return res.json({ success: true }); // silently discard stale analytics
+    }
+
     const analytics = await Analytics.create({
       businessId,
       businessName,
@@ -1250,6 +1257,145 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 function deg2rad(deg) {
   return deg * (Math.PI / 180);
 }
+
+// ============================================
+// ADMIN ANALYTICS ENDPOINTS
+// ============================================
+
+// Admin: Analytics summary (KPIs + 30-day chart data)
+app.get("/api/admin/analytics/summary", requireAdmin, async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [total, today, thisWeek, thisMonth, dwellTotal, uniqueBusinesses] = await Promise.all([
+      Analytics.count(),
+      Analytics.count({ where: { timestamp: { [Op.gte]: startOfToday } } }),
+      Analytics.count({ where: { timestamp: { [Op.gte]: startOfWeek } } }),
+      Analytics.count({ where: { timestamp: { [Op.gte]: startOfMonth } } }),
+      Analytics.count({ where: { eventType: 'dwell' } }),
+      Analytics.count({ distinct: true, col: 'businessId' })
+    ]);
+
+    // Top event type
+    const typeCounts = await Analytics.findAll({
+      attributes: ['eventType', [sequelize.fn('COUNT', sequelize.col('id')), 'cnt']],
+      group: ['eventType'],
+      order: [[sequelize.literal('cnt'), 'DESC']],
+      limit: 1,
+      raw: true
+    });
+    const topEventType = typeCounts.length > 0 ? typeCounts[0].eventType : null;
+
+    // Events last 30 days grouped by date
+    const last30Days = await Analytics.findAll({
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('timestamp')), 'date'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      where: { timestamp: { [Op.gte]: thirtyDaysAgo } },
+      group: [sequelize.fn('DATE', sequelize.col('timestamp'))],
+      order: [[sequelize.fn('DATE', sequelize.col('timestamp')), 'ASC']],
+      raw: true
+    });
+
+    res.json({
+      total,
+      today,
+      thisWeek,
+      thisMonth,
+      dwellTotal,
+      uniqueBusinesses,
+      topEventType,
+      last30Days
+    });
+  } catch (error) {
+    console.error('Admin analytics summary error:', error);
+    res.status(500).json({ error: "Failed to fetch analytics summary" });
+  }
+});
+
+// Admin: Top businesses by engagement
+app.get("/api/admin/analytics/top-businesses", requireAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 20;
+    const days = parseInt(req.query.days) || 30;
+    const since = days >= 9999
+      ? new Date(0)
+      : new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const rows = await Analytics.findAll({
+      attributes: [
+        'businessId',
+        'businessName',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'total'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN eventType = 'card_click' THEN 1 ELSE 0 END")), 'card_clicks'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN eventType = 'directions_click' THEN 1 ELSE 0 END")), 'directions_clicks'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN eventType = 'website_click' THEN 1 ELSE 0 END")), 'website_clicks'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN eventType = 'tag_click' THEN 1 ELSE 0 END")), 'tag_clicks'],
+        [sequelize.fn('SUM', sequelize.literal("CASE WHEN eventType = 'dwell' THEN 1 ELSE 0 END")), 'dwell_sessions'],
+        [sequelize.fn('MAX', sequelize.col('timestamp')), 'lastSeen']
+      ],
+      where: { timestamp: { [Op.gte]: since } },
+      group: ['businessId', 'businessName'],
+      order: [[sequelize.literal('total'), 'DESC']],
+      limit,
+      raw: true
+    });
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Admin top businesses error:', error);
+    res.status(500).json({ error: "Failed to fetch top businesses" });
+  }
+});
+
+// Admin: Recent analytics events
+app.get("/api/admin/analytics/recent", requireAdmin, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+    const rows = await Analytics.findAll({
+      attributes: ['id', 'businessName', 'eventType', 'timestamp'],
+      order: [['timestamp', 'DESC']],
+      limit,
+      raw: true
+    });
+    res.json(rows);
+  } catch (error) {
+    console.error('Admin recent analytics error:', error);
+    res.status(500).json({ error: "Failed to fetch recent analytics" });
+  }
+});
+
+// Admin: Events grouped by type for a date range
+app.get("/api/admin/analytics/by-type", requireAdmin, async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+    const since = days >= 9999
+      ? new Date(0)
+      : new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const rows = await Analytics.findAll({
+      attributes: [
+        'eventType',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      where: { timestamp: { [Op.gte]: since } },
+      group: ['eventType'],
+      order: [[sequelize.literal('count'), 'DESC']],
+      raw: true
+    });
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Admin analytics by-type error:', error);
+    res.status(500).json({ error: "Failed to fetch analytics by type" });
+  }
+});
 
 // ============================================
 // PUSH NOTIFICATION ROUTES
@@ -1558,6 +1704,13 @@ cron.schedule('* * * * *', async () => {
     console.error('Failed processing cron clock:', err);
   }
 });
+
+// Migrate analytics eventType ENUM to include 'dwell'
+(async () => {
+  try {
+    await sequelize.query("ALTER TABLE `analytics` MODIFY COLUMN `eventType` ENUM('card_click','tag_click','directions_click','website_click','dwell') NOT NULL");
+  } catch(e) { /* already migrated or column doesn't exist */ }
+})();
 
 // Fallback: serve index.html for root
 app.get("*", (req, res) => {

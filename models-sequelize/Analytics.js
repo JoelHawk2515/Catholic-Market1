@@ -21,7 +21,7 @@ module.exports = (sequelize) => {
       allowNull: false
     },
     eventType: {
-      type: DataTypes.ENUM('card_click', 'tag_click', 'directions_click', 'website_click'),
+      type: DataTypes.ENUM('card_click', 'tag_click', 'directions_click', 'website_click', 'dwell'),
       allowNull: false
     },
     tag: {

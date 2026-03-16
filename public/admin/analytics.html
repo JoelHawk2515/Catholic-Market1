@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Analytics - Catholic Market Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* ── Admin Layout ── */
+    body.admin-body {
+      background: var(--bg-base, #0c0e14);
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      color: var(--text-primary, #eef0f6);
+      overflow-y: auto;
+      height: auto;
+    }
+
+    /* ── Admin Sidebar ── */
+    .admin-sidebar {
+      width: 260px;
+      background: var(--bg-surface, #14161e);
+      border-right: 1px solid var(--border, #252938);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .admin-sidebar-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border, #252938);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .admin-sidebar-header img {
+      height: 32px;
+      filter: brightness(1.15);
+    }
+
+    .admin-sidebar-header span {
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .admin-sidebar-nav {
+      flex: 1;
+      padding: 0.75rem 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-nav-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted, #6b7394);
+      padding: 1rem 1.5rem 0.5rem;
+    }
+
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1.5rem;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-nav-item:hover {
+      background: rgba(91, 141, 239, 0.06);
+      color: var(--text-primary, #eef0f6);
+    }
+
+    .sidebar-nav-item.active {
+      background: rgba(91, 141, 239, 0.08);
+      color: #5b8def;
+      border-left-color: #5b8def;
+    }
+
+    .sidebar-nav-item i {
+      width: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border, #252938);
+    }
+
+    .sidebar-footer button {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-light, #2e3348);
+      background: transparent;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-footer button:hover {
+      background: rgba(248, 113, 113, 0.08);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #f87171;
+    }
+
+    /* ── Mobile Sidebar Toggle ── */
+    .admin-sidebar-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 200;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      color: var(--text-primary, #eef0f6);
+      font-size: 1.1rem;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .admin-sidebar {
+        transform: translateX(-100%);
+      }
+
+      .admin-sidebar.open {
+        transform: translateX(0);
+      }
+
+      .admin-main {
+        margin-left: 0 !important;
+        padding: 4rem 1rem 2rem !important;
+      }
+
+      .admin-sidebar-toggle {
+        display: flex;
+      }
+
+      .kpi-row {
+        grid-template-columns: 1fr 1fr !important;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .kpi-row {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ── Main Content ── */
+    .admin-main {
+      flex: 1;
+      margin-left: 260px;
+      padding: 2rem 2.5rem;
+      max-width: 1200px;
+      box-sizing: border-box;
+    }
+
+    .admin-main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-main-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary, #eef0f6);
+    }
+
+    .admin-main-subtitle {
+      color: var(--text-muted, #6b7394);
+      font-size: 0.9rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      border-radius: 14px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-light, #2e3348);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon.blue { background: rgba(91, 141, 239, 0.12); color: #5b8def; }
+    .kpi-icon.amber { background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
+    .kpi-icon.green { background: rgba(52, 211, 153, 0.12); color: #34d399; }
+    .kpi-icon.purple { background: rgba(167, 139, 250, 0.12); color: #a78bfa; }
+    .kpi-icon.red { background: rgba(248, 113, 113, 0.12); color: #f87171; }
+
+    .kpi-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary, #eef0f6);
+      line-height: 1.2;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted, #6b7394);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Section Cards ── */
+    .section-card {
+      background: var(--bg-surface, #14161e);
+      border: 1px solid var(--border, #252938);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-card h3 {
+      margin: 0 0 1.25rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary, #eef0f6);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-card h3 i {
+      color: #5b8def;
+    }
+
+    /* ── Date Range Filter Buttons ── */
+    .date-filter-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .date-btn {
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border, #252938);
+      background: transparent;
+      color: var(--text-secondary, #9ba3c0);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .date-btn:hover {
+      border-color: #5b8def;
+      color: #5b8def;
+    }
+
+    .date-btn.active {
+      background: rgba(91, 141, 239, 0.12);
+      border-color: #5b8def;
+      color: #5b8def;
+      font-weight: 600;
+    }
+
+    /* ── 30-Day Bar Chart ── */
+    .bar-chart-wrap {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 140px;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .bar-chart-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 18px;
+      max-width: 40px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar-chart-bar {
+      width: 100%;
+      background: #5b8def;
+      border-radius: 3px 3px 0 0;
+      min-height: 2px;
+      transition: opacity 0.15s;
+    }
+
+    .bar-chart-bar:hover {
+      opacity: 0.75;
+    }
+
+    .bar-chart-label {
+      font-size: 0.55rem;
+      color: var(--text-muted, #6b7394);
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+      max-width: 30px;
+      text-align: center;
+    }
+
+    .chart-empty {
+      color: var(--text-muted, #6b7394);
+      font-size: 0.875rem;
+      padding: 2rem 0;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ── Event Type Breakdown Horizontal Bars ── */
+    .type-bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .type-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .type-bar-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary, #9ba3c0);
+      width: 120px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .type-bar-track {
+      flex: 1;
+      height: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .type-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.4s ease;
+    }
+
+    .type-bar-count {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary, #eef0f6);
+      width: 48px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Top Businesses Table ── */
+    .analytics-table-wrap {
+      overflow-x: auto;
+    }
+
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.845rem;
+    }
+
+    .analytics-table th {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      color: var(--text-muted, #6b7394);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border, #252938);
+      white-space: nowrap;
+    }
+
+    .analytics-table td {
+      padding: 0.65rem 0.75rem;
+      color: var(--text-secondary, #9ba3c0);
+      border-bottom: 1px solid rgba(37, 41, 56, 0.5);
+      white-space: nowrap;
+    }
+
+    .analytics-table tbody tr:hover td {
+      background: rgba(91, 141, 239, 0.04);
+    }
+
+    .analytics-table td.rank {
+      color: var(--text-muted, #6b7394);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .analytics-table td.biz-name {
+      color: var(--text-primary, #eef0f6);
+      font-weight: 500;
+    }
+
+    .analytics-table td.total {
+      color: #5b8def;
+      font-weight: 700;
+    }
+
+    /* ── Recent Activity Feed ── */
+    .activity-feed {
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(37, 41, 56, 0.5);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .activity-text {
+      flex: 1;
+      font-size: 0.83rem;
+      color: var(--text-secondary, #9ba3c0);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .activity-text strong {
+      color: var(--text-primary, #eef0f6);
+    }
+
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--text-muted, #6b7394);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .activity-type-badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* ── Loading State ── */
+    .loading-placeholder {
+      color: var(--text-muted, #6b7394);
+      font-size: 0.875rem;
+      padding: 1rem 0;
+      text-align: center;
+    }
+
+    /* ── Two Column Grid ── */
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 800px) {
+      .two-col-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="admin-body">
+  <!-- Mobile Sidebar Toggle -->
+  <button class="admin-sidebar-toggle" id="sidebarToggle"
+    onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-header">
+      <img src="/img/logo.png" alt="Logo" />
+      <span>Admin Panel</span>
+    </div>
+
+    <nav class="admin-sidebar-nav">
+      <div class="sidebar-nav-label">Management</div>
+      <a class="sidebar-nav-item" href="/admin/dashboard.html">
+        <i class="fas fa-clock"></i> Dashboard
+      </a>
+
+      <div class="sidebar-nav-label">Tools</div>
+      <a class="sidebar-nav-item" href="/admin/bulk-upload.html">
+        <i class="fas fa-file-import"></i> Bulk Upload
+      </a>
+      <a class="sidebar-nav-item active" href="/admin/analytics.html">
+        <i class="fas fa-chart-bar"></i> Analytics
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="admin-main-header">
+      <h1>Analytics</h1>
+    </div>
+    <p class="admin-main-subtitle">User engagement tracking across all businesses</p>
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fas fa-chart-line"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiTotal">–</span>
+          <span class="kpi-label">Total Events</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon amber"><i class="fas fa-calendar-day"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiToday">–</span>
+          <span class="kpi-label">Events Today</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon red"><i class="fas fa-hourglass-half"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiDwell">–</span>
+          <span class="kpi-label">5min+ Views</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fas fa-store"></i></div>
+        <div class="kpi-info">
+          <span class="kpi-value" id="kpiUnique">–</span>
+          <span class="kpi-label">Unique Businesses</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Over Time (30-day bar chart) -->
+    <div class="section-card">
+      <h3><i class="fas fa-chart-bar"></i> Events – Last 30 Days</h3>
+      <div class="bar-chart-wrap" id="barChartWrap">
+        <div class="loading-placeholder">Loading chart...</div>
+      </div>
+    </div>
+
+    <!-- Event Type Breakdown + Recent Activity side-by-side -->
+    <div class="two-col-grid">
+      <!-- Event Type Breakdown -->
+      <div class="section-card" style="margin-bottom:0;">
+        <h3><i class="fas fa-tag"></i> Events by Type</h3>
+        <div class="date-filter-row" id="typeFilterRow">
+          <button class="date-btn" data-days="1">Today</button>
+          <button class="date-btn" data-days="7">7 Days</button>
+          <button class="date-btn active" data-days="30">30 Days</button>
+          <button class="date-btn" data-days="9999">All Time</button>
+        </div>
+        <div class="type-bar-list" id="typeBarList">
+          <div class="loading-placeholder">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="section-card" style="margin-bottom:0;">
+        <h3><i class="fas fa-bolt"></i> Recent Activity</h3>
+        <div class="activity-feed" id="activityFeed">
+          <div class="loading-placeholder">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spacer between two-col and table -->
+    <div style="margin-bottom: 1.5rem;"></div>
+
+    <!-- Top Businesses Table -->
+    <div class="section-card">
+      <h3><i class="fas fa-trophy"></i> Top Businesses by Engagement</h3>
+      <div class="date-filter-row" id="bizFilterRow">
+        <button class="date-btn" data-days="1">Today</button>
+        <button class="date-btn" data-days="7">7 Days</button>
+        <button class="date-btn active" data-days="30">30 Days</button>
+        <button class="date-btn" data-days="9999">All Time</button>
+      </div>
+      <div class="analytics-table-wrap">
+        <table class="analytics-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Business</th>
+              <th>Total</th>
+              <th>Card Clicks</th>
+              <th>Directions</th>
+              <th>Website</th>
+              <th>5min+ Views</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody id="topBizTbody">
+            <tr><td colspan="8" class="loading-placeholder">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script src="/admin/analytics.js"></script>
+</body>
+
+</html>

@@ -2103,3 +2103,35 @@ body.home-body {
     }
   }
 }
+
+/* ── User Location Dot ── */
+.user-location-dot {
+  position: relative;
+  width: 18px;
+  height: 18px;
+}
+
+.user-location-dot-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+  z-index: 2;
+}
+
+.user-location-dot-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.25);
+  animation: user-location-pulse 2s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes user-location-pulse {
+  0%   { transform: scale(0.6); opacity: 0.8; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(0.6); opacity: 0; }
+}

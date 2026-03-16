@@ -2,8 +2,10 @@
 
 let userLocation = null; // { lat, lng } if geolocation succeeds
 let map = null;
+let dwellTimer = null; // { businessId, businessName, openedAt }
 let boundsRect = null;
 let markersLayer = null;
+let userLocationMarker = null;
 
 // Default location: Wichita, KS
 const DEFAULT_LOCATION = { name: "Wichita, KS", lat: 37.6872, lng: -97.3301 };
@@ -69,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             lng: pos.coords.longitude
           };
           myLocationBtn.classList.add("location-available");
+          placeUserLocationDot();
         },
         (err) => console.warn("Geolocation error:", err),
         { enableHighAccuracy: true, timeout: 10000 }
@@ -433,6 +436,7 @@ myLocationBtn.addEventListener("click", async () => {
           };
           myLocationBtn.classList.remove("loading");
           myLocationBtn.classList.add("location-available");
+          placeUserLocationDot();
           await goToUserLocation();
         },
         (err) => {
@@ -487,6 +491,34 @@ async function goToUserLocation() {
   } catch (err) {
     console.error(err);
     alert("Error determining city from your location. Try searching manually.");
+  }
+}
+
+// ==========================================
+// USER LOCATION DOT
+// ==========================================
+
+function placeUserLocationDot() {
+  if (!map || !userLocation) return;
+
+  const icon = L.divIcon({
+    className: '',
+    html: '<div class="user-location-dot"><div class="user-location-dot-ring"></div><div class="user-location-dot-inner"></div></div>',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -12]
+  });
+
+  if (userLocationMarker) {
+    userLocationMarker.setLatLng([userLocation.lat, userLocation.lng]);
+  } else {
+    userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
+      icon,
+      zIndexOffset: 1000,
+      interactive: false
+    })
+      .addTo(map)
+      .bindTooltip('You are here', { direction: 'top', offset: [0, -10], className: 'leaflet-tooltip' });
   }
 }
 
@@ -548,6 +580,7 @@ async function showMapForBounds(southWest, northEast, label) {
     }).addTo(map);
 
     markersLayer = L.layerGroup().addTo(map);
+    placeUserLocationDot(); // show dot if location was already known
   }
 
   const bounds = L.latLngBounds(southWest, northEast);
@@ -1105,6 +1138,9 @@ function openMobileDetail(b, hoursDiv) {
 
   document.body.appendChild(panel);
 
+  // Start dwell timer when panel opens
+  startDwellTimer(b._id || b.id, b.name);
+
   // Trigger animation
   requestAnimationFrame(() => {
     panel.classList.add('active');
@@ -1128,6 +1164,7 @@ function openMobileDetail(b, hoursDiv) {
 }
 
 function closeMobileDetail() {
+  endDwellTimer();
   const panel = document.getElementById('mobileDetailPanel');
   if (panel) {
     panel.classList.remove('active');
@@ -1136,6 +1173,27 @@ function closeMobileDetail() {
     setTimeout(() => { if (panel.parentNode) panel.remove(); }, 400);
   }
 }
+
+// ==========================================
+// DWELL TIME TRACKING
+// ==========================================
+
+function startDwellTimer(businessId, businessName) {
+  dwellTimer = { businessId, businessName, openedAt: Date.now() };
+}
+
+function endDwellTimer() {
+  if (!dwellTimer) return;
+  const elapsed = Date.now() - dwellTimer.openedAt;
+  const fiveMinutes = 5 * 60 * 1000;
+  if (elapsed >= fiveMinutes) {
+    trackBusinessClick(dwellTimer.businessId, dwellTimer.businessName, 'dwell');
+  }
+  dwellTimer = null;
+}
+
+window.addEventListener('beforeunload', endDwellTimer);
+window.addEventListener('visibilitychange', () => { if (document.hidden) endDwellTimer(); });
 
 // ==========================================
 // ANALYTICS & UTILITIES
